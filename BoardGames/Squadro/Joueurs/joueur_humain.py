@@ -1,14 +1,6 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-import sys
-import os
-dirname = os.path.dirname(__file__)
-parent = os.path.dirname(dirname)
-grandparent = os.path.dirname(parent)
-sys.path.append(grandparent)
 import game
 if game.GUI: import pygame
-import squadro
+from Squadro import squadro
 
 
 def saisieCoup(jeu):
@@ -31,9 +23,7 @@ def saisieCoup(jeu):
         rects = sum(squadro.RECTS.values(), [])
         while True:
             for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit(0)
+                if event.type == pygame.QUIT: return None
 
                 x, y = pygame.mouse.get_pos()
                 for rect in rects:

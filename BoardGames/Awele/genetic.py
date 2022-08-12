@@ -119,5 +119,3 @@ for i in range(NB_GEN):
 
 end = time.time()
 print(f"\nTemps: {(end-start)/60} minutes")
-
-

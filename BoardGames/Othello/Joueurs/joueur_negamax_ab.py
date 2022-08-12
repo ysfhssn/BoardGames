@@ -1,12 +1,5 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-import sys
-import os
-dirname = os.path.dirname(__file__)
-parent = os.path.dirname(dirname)
-grandparent = os.path.dirname(parent)
-sys.path.append(grandparent)
 import game
+if game.GUI: import pygame
 
 ####### WEIGHTS #######
 POSITIONAL      = 1.00
@@ -49,8 +42,9 @@ def decision(jeu, alpha, beta):
         if v > vmax:
             vmax = v
             bestCoup = coup
-        if v > alpha:
-            alpha = v
+    if game.GUI:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT: return None
 
     return bestCoup
 

@@ -5,10 +5,9 @@ import os
 dirname = os.path.dirname(__file__)
 parent = os.path.dirname(dirname)
 sys.path.append(parent)
-sys.path.append(os.path.join(dirname, 'Joueurs'))
-import joueur_random, joueur_minimax_ab, MASTER
+from Squadro.Joueurs import joueur_minimax_ab, MASTER, joueur_random
 import game
-game.GUI = False
+game.GUI = True
 import squadro
 if game.GUI: import pygame
 import time

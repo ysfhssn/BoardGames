@@ -5,22 +5,17 @@ import os
 dirname = os.path.dirname(__file__)
 parent = os.path.dirname(dirname)
 sys.path.append(parent)
-sys.path.append(os.path.join(dirname, 'Joueurs'))
 import game
 if game.GUI: import pygame
-import chess
-import joueur_humain, joueur_minimax_ab, joueur_minimax_ab_opti, joueur_stockfish
+from Chess.Joueurs import joueur_minimax_ab, joueur_minimax_ab_opti, MASTER, MCTS, joueur_random
 import time
-JOUEURS_TREE = [joueur_minimax_ab, joueur_minimax_ab_opti]
-
-
-game.game = chess
-game.joueur1 = joueur_humain
-game.joueur2 = joueur_stockfish
+JOUEURS_TREE = [joueur_minimax_ab, joueur_minimax_ab_opti, MASTER, MCTS]
 
 
 START = None
 def main():
+    from Chess import chess
+    game.game = chess
     global START
     NB_PARTIES = N = 1 #int(input("Nombre de parties: "))
     START = time.time()
@@ -34,35 +29,30 @@ def main():
         jeu = game.initialiseJeu()
         #jeu = game.initialiseInteressant("EN PASSANT")
         #game.affiche(jeu)
-        if game.GUI: game.game.draw_board(jeu)
+        if game.GUI:
+            pygame.display.set_mode((chess.WIDTH, chess.HEIGHT))
+            chess.draw_board(jeu)
 
         start = time.time()
         while not game.finJeu(jeu):
             if game.GUI:
+                pygame.display.set_mode((chess.WIDTH, chess.HEIGHT))
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         pygame.quit()
                         sys.exit(0)
+
             start_coup = time.time()
-            coup = game.saisieCoup(jeu)
+            if len(game.getCoupsJoues(jeu)) < 0: coup = joueur_random.saisieCoup(jeu)
+            else: coup = game.saisieCoup(jeu)
             end_coup = time.time()
             temps_coup = end_coup - start_coup
+            if coup is None: return # human quit
 
-            if jeu[1] == 1:
-                ai_name = game.joueur1.__name__.upper().split('_')[-1]
-                print(f"TEMPS COUP {ai_name}: {temps_coup:.5f} seconds")
-                if game.joueur1 in JOUEURS_TREE:
-                    print(f"\tNB_NOEUDS: {game.joueur1.NB_NOEUDS}")
-                    if ai_name == "OPTI": print(f"\tNB_CACHE: {game.joueur1.NB_CACHE}")
-            if jeu[1] == 2:
-                ai_name = game.joueur2.__name__.upper().split('_')[-1]
-                print(f"TEMPS COUP {ai_name}: {temps_coup:.5f} seconds")
-                if game.joueur2 in JOUEURS_TREE:
-                    print(f"\tNB_NOEUDS: {game.joueur2.NB_NOEUDS}")
-                    if ai_name == "OPTI": print(f"\tNB_CACHE: {game.joueur2.NB_CACHE}")
+            print_stats_coup(jeu, temps_coup)
 
             game.joueCoup(jeu, coup)
-            if game.GUI: game.game.draw_board(jeu)
+            if game.GUI: chess.draw_board(jeu)
             #game.affiche(jeu)
             #game.changeJoueur(jeu) deja effectue dans joueCoup
         end = time.time()
@@ -107,7 +97,7 @@ def main():
 
 
     print("\n\n###########################################")
-    print(f"{game.joueur1.__name__.upper()} VS {game.joueur2.__name__.upper()}")
+    print(f"{game.joueur1.__name__.upper().split('.')[-1].split('_')[-1]} VS {game.joueur2.__name__.upper().split('.')[-1].split('_')[-1]}")
     print("\nNB_PARTIES:          ", NB_PARTIES)
     print("NB_PARTIES_GAGNES_J1:", NB_PARTIES_GAGNES_J1)
     print("NB_PARTIES_GAGNES_J2:", NB_PARTIES_GAGNES_J2)
@@ -115,9 +105,25 @@ def main():
     print("###########################################")
 
 
-
+def print_stats_coup(jeu, temps_coup):
+    if jeu[1] == 1:
+        joueur = game.joueur1.__name__.upper().split('.')[-1].split('_')[-1].split('.')[-1].split('_')[-1]
+        print(f"TEMPS COUP {joueur}: {temps_coup:.5f} seconds")
+        if game.joueur1 in JOUEURS_TREE:
+            print(f"\tNB_NOEUDS: {game.joueur1.NB_NOEUDS}")
+            if joueur == "OPTI": print(f"\tNB_CACHE: {game.joueur1.NB_CACHE}")
+    if jeu[1] == 2:
+        joueur = game.joueur2.__name__.upper().split('.')[-1].split('_')[-1].split('.')[-1].split('_')[-1]
+        print(f"TEMPS COUP {joueur}: {temps_coup:.5f} seconds")
+        if game.joueur2 in JOUEURS_TREE:
+            print(f"\tNB_NOEUDS: {game.joueur2.NB_NOEUDS}")
+            if joueur == "OPTI": print(f"\tNB_CACHE: {game.joueur2.NB_CACHE}")
 
 if __name__ == "__main__":
+    #######################
+    game.joueur1 = MASTER
+    game.joueur2 =  MCTS
+    #######################
     main()
     END = time.time()
     temps = END - START

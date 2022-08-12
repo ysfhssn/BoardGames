@@ -1,13 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import sys
-from Squadro.Joueurs import joueur_humain, MASTER, MCTS
+import os
+dirname = os.path.dirname(__file__)
+parent = os.path.dirname(dirname)
+sys.path.append(parent)
+from Othello.Joueurs import joueur_humain, MASTER, MCTS
 import game
 if not game.GUI:
     print("GUI mode is off.")
     sys.exit(1)
 import pygame
-from Squadro.main import main
+from Othello.main import main
 
 
 ##################################################################################################
@@ -35,7 +39,7 @@ def selection():
     HEIGHT = (len(buttons)//2 + len(buttons)%2) * 110
 
     WIN = pygame.display.set_mode((WIDTH, HEIGHT))
-    pygame.display.set_caption("Squadro")
+    pygame.display.set_caption("Othello")
     while True:
         WIN.fill((0,0,0))
 
@@ -46,12 +50,12 @@ def selection():
             if button.draw_button(WIN):
                 game.joueur1 = button.modules[0]
                 game.joueur2 = button.modules[1]
-                main()
+                main.main()
                 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
-                pygame.display.set_caption("Squadro")
+                pygame.display.set_caption("Othello")
 
         pygame.display.update()
 
 
 if __name__ == "__main__":
-	selection()
+    selection()

@@ -3,6 +3,7 @@
 import pygame
 import sys
 import os
+import Awele.players_selection, Chess.players_selection, Othello.players_selection, Puissance4.players_selection, Squadro.players_selection
 dirname = os.path.dirname(__file__)
 
 
@@ -10,94 +11,45 @@ dirname = os.path.dirname(__file__)
 ##################                      SELECTION DES JEUX                      ##################
 ##################################################################################################
 def selection():
-	pygame.init()
+    pygame.init()
+    from button import Button
 
-	screen_width = 700
-	screen_height = 600
+    #games = [f for f in os.listdir(dirname) if os.path.isdir(os.path.join(dirname, f)) and not f.startswith('_')]
+    #games.pop(0) # No Awele
+    games = ['Chess', 'Othello', 'Puissance4', 'Squadro']
 
-	screen = pygame.display.set_mode((screen_width, screen_height))
-	pygame.display.set_caption("Board Games")
+    WIDTH = 700
+    HEIGHT = (len(games)//2 + len(games)%2) * 120
+    OFFSET_X = 250
+    OFFSET_Y = 100
 
-	font = pygame.font.SysFont('Constantia', 30)
+    buttons = []
+    for i, game in enumerate(games):
+        x = 100 + ((i%2) * OFFSET_X)
+        y = 35 + ((i//2) * OFFSET_Y)
+        buttons.append(Button(x, y, game))
 
-	#define colours
-	red = (255, 0, 0)
-	black = (0, 0, 0)
-	white = (255, 255, 255)
+    WIN = pygame.display.set_mode((WIDTH, HEIGHT))
+    pygame.display.set_caption("Board Games")
+    while True:
+        WIN.fill((0,0,0))
 
-	#define global variable
-	global clicked
-	clicked = False
-	counter = 0
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT: sys.exit(0)
 
-	class button():
-		#colours for button and text
-		button_col = (255, 0, 0)
-		hover_col = (75, 225, 255)
-		click_col = (50, 150, 255)
-		text_col = black
-		width = 240
-		height = 70
+        for button in buttons:
+            if button.draw_button(WIN):
+                if button.text == 'Awele':
+                    Awele.players_selection.selection()
+                elif button.text == 'Chess':
+                    Chess.players_selection.selection()
+                elif button.text == 'Othello':
+                    Othello.players_selection.selection()
+                elif button.text == 'Puissance4':
+                    Puissance4.players_selection.selection()
+                elif button.text == 'Squadro':
+                    Squadro.players_selection.selection()
+                WIN = pygame.display.set_mode((WIDTH, HEIGHT))
+                pygame.display.set_caption("Board Games")
 
-		def __init__(self, x, y, text):
-			self.x = x
-			self.y = y
-			self.text = text
-
-		def draw_button(self):
-			global clicked
-			action = False
-
-			#get mouse position
-			pos = pygame.mouse.get_pos()
-
-			#create pygame Rect object for the button
-			button_rect = pygame.Rect(self.x, self.y, self.width, self.height)
-
-			#check mouseover and clicked conditions
-			if button_rect.collidepoint(pos):
-				if pygame.mouse.get_pressed()[0] == 1:
-					clicked = True
-					pygame.draw.rect(screen, self.click_col, button_rect)
-				elif pygame.mouse.get_pressed()[0] == 0 and clicked == True:
-					clicked = False
-					action = True
-				else:
-					pygame.draw.rect(screen, self.hover_col, button_rect)
-			else:
-				pygame.draw.rect(screen, self.button_col, button_rect)
-
-			#add shading to button
-			pygame.draw.line(screen, white, (self.x, self.y), (self.x + self.width, self.y), 2)
-			pygame.draw.line(screen, white, (self.x, self.y), (self.x, self.y + self.height), 2)
-			pygame.draw.line(screen, black, (self.x, self.y + self.height), (self.x + self.width, self.y + self.height), 2)
-			pygame.draw.line(screen, black, (self.x + self.width, self.y), (self.x + self.width, self.y + self.height), 2)
-
-			#add text to button
-			text_img = font.render(self.text, True, self.text_col)
-			text_len = text_img.get_width()
-			screen.blit(text_img, (self.x + int(self.width / 2) - int(text_len / 2), self.y + 25))
-			return action
-
-	button1 = button(100, 100, 'Awele')
-	button2 = button(350, 100, 'Othello')
-	button3 = button(100, 250, 'Puissance4')
-	button4 = button(350, 250, 'Squadro')
-	button5 = button(100, 400, 'Chess')
-
-	buttons = [button1, button2, button3, button4, button5]
-
-	run = True
-	while run:
-		screen.fill(black)
-
-		for button in buttons:
-			if button.draw_button():
-				os.system("python " + os.path.join(dirname, button.text + "/main.py") + " || python3 " + os.path.join(dirname, button.text + "/main.py"))
-
-		for event in pygame.event.get():
-			if event.type == pygame.QUIT:
-				run = False
-				sys.exit(0)
-
-		pygame.display.update()
+        pygame.display.update()

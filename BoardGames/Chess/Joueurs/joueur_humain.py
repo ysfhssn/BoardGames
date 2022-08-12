@@ -1,11 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import sys
-import os
-dirname = os.path.dirname(__file__)
-parent = os.path.dirname(dirname)
-grandparent = os.path.dirname(parent)
-sys.path.append(grandparent)
 import game
 if game.GUI: import pygame
 
@@ -43,9 +37,7 @@ def saisieCoup(jeu):
         while not game.game.finJeu(jeu):
             draw_board(jeu)
             for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit(0)
+                if event.type == pygame.QUIT: return None
                 x, y = pygame.mouse.get_pos()
                 if pygame.mouse.get_pressed()[0]:
                     snd_loop = True
@@ -77,9 +69,7 @@ def saisieCoup(jeu):
 
                     while snd_loop:
                         for event in pygame.event.get():
-                            if event.type == pygame.QUIT:
-                                pygame.quit()
-                                sys.exit(0)
+                            if event.type == pygame.QUIT: return None
                             x, y = pygame.mouse.get_pos()
                             if pygame.mouse.get_pressed()[0]:
                                 di, dj = y//SIZE, x//SIZE

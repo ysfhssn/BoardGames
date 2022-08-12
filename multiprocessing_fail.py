@@ -77,7 +77,7 @@ def main():
     print(f"\nTemps total : {temps:.5f} seconds")
 
     print("\n\n###########################################")
-    print(f"{game.joueur1.__name__.upper()} VS {game.joueur2.__name__.upper()}")
+    print(f"{game.joueur1.__name__.upper().split('.')[-1].split('_')[-1]} VS {game.joueur2.__name__.upper().split('.')[-1].split('_')[-1]}")
     print("\nNB_PARTIES:          ", NB_PARTIES)
     print("NB_PARTIES_GAGNES_J1:", NB_PARTIES_GAGNES_J1.value)
     print("NB_PARTIES_GAGNES_J2:", NB_PARTIES_GAGNES_J2.value)

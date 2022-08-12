@@ -26,10 +26,11 @@ if game.GUI:
     pygame.init()
     pygame.font.init()
     FONT = pygame.font.SysFont("couriernew", 22)
-    HEIGHT = 640
+    OFFSET = 100
+    HEIGHT = 640 + OFFSET
     WIDTH = 640
     SIZE = WIDTH // 8
-    WIN = pygame.display.set_mode((WIDTH, HEIGHT+100))
+    WIN = pygame.display.set_mode((WIDTH, HEIGHT))
     pygame.display.set_caption("Chess")
     bg = pygame.image.load(os.path.join(dirname, "./Images/board.png")).convert_alpha()
     bP = pygame.image.load(os.path.join(dirname, "./Images/bP.png")).convert_alpha()
@@ -476,9 +477,9 @@ def draw_board(jeu):
         color = (255,255,255)
     text = FONT.render(text_str, False, color)
     score = FONT.render(f"{jeu[4][:2]}", False, (255,255,255))
-    joueurs = pygame.font.SysFont("couriernew", 22).render(f"{game.joueur1.__name__.upper().split('_')[-1]} VS {game.joueur2.__name__.upper().split('_')[-1]}", False, (255,255,255))
-    WIN.blit(text, (WIDTH//2 - text.get_width()//2, HEIGHT+5))
-    WIN.blit(score, (WIDTH//2 - score.get_width()//2, HEIGHT+35))
-    WIN.blit(joueurs, (WIDTH//2 - joueurs.get_width()//2, HEIGHT+65))
+    joueurs = pygame.font.SysFont("couriernew", 22).render(f"{game.joueur1.__name__.upper().split('.')[-1].split('_')[-1].split('.')[-1].split('_')[-1]} VS {game.joueur2.__name__.upper().split('.')[-1].split('_')[-1].split('.')[-1].split('_')[-1]}", False, (255,255,255))
+    WIN.blit(text, (WIDTH//2 - text.get_width()//2, HEIGHT-OFFSET+5))
+    WIN.blit(score, (WIDTH//2 - score.get_width()//2, HEIGHT-OFFSET+35))
+    WIN.blit(joueurs, (WIDTH//2 - joueurs.get_width()//2, HEIGHT-OFFSET+65))
 
     pygame.display.update()

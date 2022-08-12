@@ -1,12 +1,5 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-import sys
-import os
-dirname = os.path.dirname(__file__)
-parent = os.path.dirname(dirname)
-grandparent = os.path.dirname(parent)
-sys.path.append(grandparent)
 import game
+if game.GUI: import pygame
 
 ####### WEIGHTS #######
 POSITIONAL      = 1.00
@@ -53,6 +46,10 @@ def decision(jeu):
     return bestCoup
 
 def negamax(jeu, plies, color):
+    if game.GUI:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT: sys.exit(1)
+
 	####### GOAL STATE EVALUATION #######
     if game.finJeu(jeu):
         winner = game.getGagnant(jeu)

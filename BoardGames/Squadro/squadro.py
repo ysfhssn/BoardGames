@@ -30,6 +30,7 @@ if game.GUI:
     PIECE_WIDTH = 25
     WIN = pygame.display.set_mode((WIDTH, HEIGHT))
     pygame.display.set_caption("Squadro")
+
     bg = pygame.image.load(os.path.join(dirname, 'Images/board.png')).convert_alpha()
     yf = pygame.image.load(os.path.join(dirname, 'Images/yForward.png')).convert_alpha()
     yb = pygame.image.load(os.path.join(dirname, 'Images/yBackward.png')).convert_alpha()
@@ -237,7 +238,7 @@ def draw_board(jeu):
         text_str = f"Au joueur {jeu[1]}"
     text = FONT.render(text_str, False, color)
     score = FONT.render(f"{jeu[4]}", False, (255,255,255))
-    joueurs = pygame.font.SysFont("couriernew", 12).render(f"{game.joueur1.__name__.upper().split('_')[-1]} VS {game.joueur2.__name__.upper().split('_')[-1]}", False, (255,255,255))
+    joueurs = pygame.font.SysFont("couriernew", 12).render(f"{game.joueur1.__name__.upper().split('.')[-1].split('_')[-1].split('.')[-1].split('_')[-1]} VS {game.joueur2.__name__.upper().split('.')[-1].split('_')[-1].split('.')[-1].split('_')[-1]}", False, (255,255,255))
     WIN.blit(text, (0, 0))
     WIN.blit(score, (text.get_width()//4, 20))
     WIN.blit(joueurs, (0, 40))

@@ -8,11 +8,8 @@ sys.path.append(parent)
 sys.path.append(os.path.join(dirname, 'Joueurs'))
 import game
 import awele
-import joueur_random
-import joueur_minimax_ab, joueur_negamax_ab, joueur_minimax_ab_order
-import Ayo_ab, MASTER
+from Awele.Joueurs import joueur_random, MASTER, joueur_minimax_ab_order
 import time
-import random
 
 
 game.game = awele

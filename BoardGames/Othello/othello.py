@@ -13,8 +13,10 @@ if game.GUI:
     pygame.font.init()
     FONT = pygame.font.SysFont('couriernew', 20)
     SIZE = 70
+    OFFSET = 35
     WIDTH = 8 * SIZE
-    WIN = pygame.display.set_mode((WIDTH, WIDTH+35))
+    HEIGHT = WIDTH + OFFSET
+    WIN = pygame.display.set_mode((WIDTH, HEIGHT))
     pygame.display.set_caption("Othello")
 
 def initialiseJeu():

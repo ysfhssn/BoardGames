@@ -7,7 +7,7 @@ parent = os.path.dirname(dirname)
 grandparent = os.path.dirname(parent)
 sys.path.append(parent)
 sys.path.append(grandparent)
-sys.path.append(os.path.join(parent, 'Joueurs'))
+
 import game
 import puissance4
 if game.GUI: import pygame

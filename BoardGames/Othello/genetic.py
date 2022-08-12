@@ -5,11 +5,11 @@ import os
 dirname = os.path.dirname(__file__)
 parent = os.path.dirname(dirname)
 sys.path.append(parent)
-sys.path.append(os.path.join(dirname, 'Joueurs'))
 import game
+game.GUI = True
 import othello
-import joueur_random
-import joueur_minimax_ab, joueur_negamax_ab
+if game.GUI: import pygame
+from Othello.Joueurs import joueur_minimax_ab, joueur_negamax_ab, joueur_random
 import time
 import random
 from tqdm import tqdm
@@ -19,17 +19,6 @@ game.game = othello
 game.joueur1 = joueur_minimax_ab
 game.joueur2 = joueur_negamax_ab
 # game.GUI = False
-
-
-if game.GUI:
-    import pygame
-    pygame.init()
-    pygame.font.init()
-    FONT = pygame.font.SysFont('couriernew', 20)
-    SIZE = 40
-    WIDTH = 8 * SIZE
-    WIN = pygame.display.set_mode((WIDTH, WIDTH+35))
-    pygame.display.set_caption("Othello")
 
 
 # generate solutions
@@ -47,7 +36,7 @@ def fitness():
 
     for i in range(NB_PARTIES):
         jeu = game.initialiseJeu()
-        if game.GUI: game.game.draw_board(WIN, jeu, SIZE, WIDTH, FONT)
+        if game.GUI: game.game.draw_board(jeu)
 
         while not game.finJeu(jeu):
             if game.GUI:
@@ -60,7 +49,7 @@ def fitness():
             else:
                 coup = game.saisieCoup(jeu)
             game.joueCoup(jeu, coup)
-            if game.GUI: game.game.draw_board(WIN, jeu, SIZE, WIDTH, FONT)
+            if game.GUI: game.game.draw_board(jeu)
 
         gagnant = game.getGagnant(jeu)
 
@@ -71,7 +60,7 @@ def fitness():
     game.joueur1, game.joueur2 = game.joueur2, game.joueur1
     for i in range(NB_PARTIES):
         jeu = game.initialiseJeu()
-        if game.GUI: game.game.draw_board(WIN, jeu, SIZE, WIDTH, FONT)
+        if game.GUI: game.game.draw_board(jeu)
 
         while not game.finJeu(jeu):
             if game.GUI:
@@ -85,7 +74,7 @@ def fitness():
             else:
                 coup = game.saisieCoup(jeu)
             game.joueCoup(jeu, coup)
-            if game.GUI: game.game.draw_board(WIN, jeu, SIZE, WIDTH, FONT)
+            if game.GUI: game.game.draw_board(jeu)
 
         gagnant = game.getGagnant(jeu)
 

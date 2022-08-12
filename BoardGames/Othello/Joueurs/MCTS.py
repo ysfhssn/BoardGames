@@ -1,9 +1,10 @@
 import game
+if game.GUI: import pygame
 import math
 import random
 
 #####################
-NB_ITERATIONS = 1000
+NB_ITERATIONS = 500
 NB_ROLLOUTS = 1
 #####################
 
@@ -53,7 +54,7 @@ def saisieCoup(jeu):
         ROOT.add_child(Node(j))
 
     # Selection - Expansion - Rollout - Backpropagation
-    for _ in range(NB_ITERATIONS):
+    for i in range(NB_ITERATIONS):
         leaf = select(ROOT)
 
         if game.finJeu(leaf.jeu):
@@ -65,6 +66,8 @@ def saisieCoup(jeu):
         else:
             children = expand(leaf)
             score = rollout(children[0])
+
+        if score is None: return None # pygame quit
 
         backpropagate(leaf, score)
 
@@ -97,6 +100,9 @@ def rollout(leaf):
     for _ in range(NB_ROLLOUTS):
         j = game.getCopieJeu(jeu)
         while not game.finJeu(j):
+            if game.GUI:
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT: return None
             coup = random.choice(game.getCoupsValides(j))
             game.joueCoup(j, coup)
         if game.getGagnant(j) == AI_PLAYER: score += 1

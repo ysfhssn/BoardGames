@@ -1,11 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-import sys
-import os
-dirname = os.path.dirname(__file__)
-parent = os.path.dirname(dirname)
-grandparent = os.path.dirname(parent)
-sys.path.append(grandparent)
 import game
 if game.GUI: import pygame
 
@@ -29,9 +21,7 @@ def saisieCoup(jeu):
         SIZE = game.game.SIZE
         while True:
             for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit(0)
+                if event.type == pygame.QUIT: return None
                 x, y = pygame.mouse.get_pos()
                 if pygame.mouse.get_pressed()[0]:
                     l, c = y//SIZE, x//SIZE

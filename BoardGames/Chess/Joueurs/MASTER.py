@@ -27,28 +27,17 @@ def saisieCoup(jeu):
     """ jeu -> coup
         Retourne un coup a jouer
     """
-    global AI_PLAYER, OPPONENT, NB_NOEUDS
+    global AI_PLAYER, OPPONENT
     AI_PLAYER = game.getJoueur(jeu)
     OPPONENT = AI_PLAYER%2 + 1
-    NB_NOEUDS = 0
 
     return decision(jeu, -INFINITY, INFINITY)
-
-def order_coups(jeu, coupsPossibles, reverse):
-    ranked_coups = []
-    for coup in coupsPossibles:
-        copyJeu = game.getCopieJeu(jeu)
-        game.joueCoup(copyJeu, coup)
-        score = heuristic(copyJeu)
-        ranked_coups.append((score, coup))
-    ranked_coups.sort(reverse=reverse)
-    return [rc[1] for rc in ranked_coups]
 
 def decision(jeu, alpha, beta):
     vmax = -INFINITY
     bestCoup = None
 
-    for coup in order_coups(jeu, game.getCoupsValides(jeu), True):
+    for coup in game.getCoupsValides(jeu):
         global NB_NOEUDS
         NB_NOEUDS += 1
         j = game.getCopieJeu(jeu)
@@ -69,11 +58,11 @@ def minimax(jeu, plies, maximizingPlayer, alpha, beta):
     if game.finJeu(jeu):
         winner = game.getGagnant(jeu)
         if winner == AI_PLAYER:
-            return 1000000 - plies # winning A$AP
+            return 10000 - plies # winning A$AP
         elif winner == 0:
             return 0
         else:
-            return plies - 1000000
+            return plies - 10000
 	####################################
 
     if plies == 0:
@@ -109,6 +98,7 @@ def minimax(jeu, plies, maximizingPlayer, alpha, beta):
         return vmin
 
 ############################################################################
+
 
 def getInputs(jeu):
     return [score(jeu, AI_PLAYER), score(jeu, OPPONENT), pawn_score(jeu, AI_PLAYER), knight_score(jeu, AI_PLAYER),

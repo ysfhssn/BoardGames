@@ -16,10 +16,17 @@ if game.GUI:
     import pygame
     pygame.init()
     SIZE = 90
-    HEIGHT = ROWS * SIZE
+    OFFSET = SIZE + 2
+    HEIGHT = ROWS * SIZE + OFFSET
     WIDTH = COLS * SIZE
     WIN = pygame.display.set_mode((WIDTH, HEIGHT))
     pygame.display.set_caption("Puissance 4")
+
+    RED = (255,0,0)
+    YELLOW = (255,255,0)
+    WHITE = (255,255,255)
+    BLUE = (0,0,255)
+    BLACK = (0,0,0)
 
 def initialiseJeu():
     """ void -> jeu
@@ -80,6 +87,9 @@ def finJeu(jeu):
                 jeu[4][joueur-1] = 1
                 return True
 
+    # Check if board is full
+    if all(board[0]): return True
+
     return False
 
 def drop_piece(jeu, coup):
@@ -138,16 +148,29 @@ def affiche(jeu):
 	printPlateau(jeu)
 	print(f"Joueur {jeu[1]}, a vous de jouer\n")
 
-def draw_board(jeu):
+def draw_board(jeu, update=True):
     board = jeu[0]
-    WIN.fill((0,0,255))
+
+    WIN.fill(BLUE)
+    pygame.draw.rect(WIN, BLACK, (0,0,WIDTH,OFFSET))
+    joueurs = pygame.font.SysFont("couriernew", 16).render(f"{game.joueur1.__name__.upper().split('.')[-1].split('_')[-1].split('.')[-1].split('_')[-1]} VS {game.joueur2.__name__.upper().split('.')[-1].split('_')[-1].split('.')[-1].split('_')[-1]}", False, WHITE)
+    WIN.blit(joueurs, (WIDTH - joueurs.get_width(),0))
+
+    if finJeu(jeu):
+        gagnant = game.getGagnant(jeu)
+        text_str = "RED WINS" if gagnant == 1 else "YELLOW WINS" if gagnant == 2 else "DRAW"
+        color = RED if gagnant == 1 else YELLOW if gagnant == 2 else WHITE
+        text = pygame.font.SysFont("couriernew", 42).render(text_str, False, color)
+        WIN.blit(text, (WIDTH//2 - text.get_width()//2, OFFSET//2 - text.get_height()//2))
+
     for i in range(ROWS):
         for j in range(COLS):
             if board[i][j] == 0:
-                pygame.draw.circle(WIN, (255,255,255), (j*SIZE+SIZE//2, i*SIZE+SIZE//2), SIZE//2 - 2)
+                pygame.draw.circle(WIN, WHITE, (j*SIZE+SIZE//2, i*SIZE+SIZE//2 + OFFSET), SIZE//2 - 2)
             elif board[i][j] == 1:
-                pygame.draw.circle(WIN, (255,0,0), (j*SIZE+SIZE//2, i*SIZE+SIZE//2), SIZE//2 - 2)
+                pygame.draw.circle(WIN, RED, (j*SIZE+SIZE//2, i*SIZE+SIZE//2 + OFFSET), SIZE//2 - 2)
             else:
-                pygame.draw.circle(WIN, (255,255,0), (j*SIZE+SIZE//2, i*SIZE+SIZE//2), SIZE//2 - 2)
+                pygame.draw.circle(WIN, YELLOW, (j*SIZE+SIZE//2, i*SIZE+SIZE//2 + OFFSET), SIZE//2 - 2)
 
-    pygame.display.update()
+    if update:
+        pygame.display.update()

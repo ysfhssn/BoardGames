@@ -1,11 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import sys
-import os
-dirname = os.path.dirname(__file__)
-parent = os.path.dirname(dirname)
-grandparent = os.path.dirname(parent)
-sys.path.append(grandparent)
 import game
 
 ####### WEIGHTS #######
@@ -68,8 +62,7 @@ def decision(jeu, alpha, beta):
 
     return bestCoup
 
-def minimax(jeu, plies, maximizingPlayer, alpha, beta):
-    ####### GOAL STATE EVALUATION #######
+def minimax(jeu, plies, maximizingPlayer, alpha, beta):    ####### GOAL STATE EVALUATION #######
     if game.finJeu(jeu):
         winner = game.getGagnant(jeu)
         if winner == AI_PLAYER:
@@ -313,4 +306,3 @@ def h12(jeu):
             cpt += 1
 
     return -cpt
-

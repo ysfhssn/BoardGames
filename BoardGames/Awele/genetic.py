@@ -5,20 +5,20 @@ import os
 dirname = os.path.dirname(__file__)
 parent = os.path.dirname(dirname)
 sys.path.append(parent)
-sys.path.append(os.path.join(dirname, 'Joueurs'))
+sys.path.append(os.path.join(dirname, 'Players'))
 import game
 import awele
-import joueur_random
-import joueur_minimax_ab, joueur_negamax_ab, joueur_minimax_ab_order
-import Ayo_ab, MASTER
+import random
+import minimax_ab, negamax_ab, minimax_ab_order
+import ayo_ab, master
 import time
 import random
 from tqdm import tqdm
 
 
 game.game = awele
-game.joueur1 = joueur_minimax_ab
-game.joueur2 = joueur_negamax_ab
+game.player1 = minimax_ab
+game.player2 = negamax_ab
 
 
 # generate solutions
@@ -31,58 +31,58 @@ for _ in range(NB_SOLUTIONS):
                       random.uniform(0,1)])
 
 
-# Il y aura 2*NB_PARTIES*NB_SOLUTIONS parties
-NB_PARTIES = 5
+# Il y aura 2*NUM_ROUNDS*NB_SOLUTIONS parties
+NUM_ROUNDS = 5
 def fitness():
     SCORE = 0
 
-    for i in range(NB_PARTIES):
-        jeu = game.initialiseJeu()
+    for i in range(NUM_ROUNDS):
+        game_info = game.init()
 
-        while not game.finJeu(jeu):
-            if len(game.getCoupsJoues(jeu)) <= 4:
-                coup = joueur_random.saisieCoup(jeu)
+        while not game.is_game_over(game_info):
+            if len(game.get_played_moves(game_info)) <= 4:
+                move = random.get_move(game_info)
             else:
-                coup = game.saisieCoup(jeu)
-            game.joueCoup(jeu, coup)
+                move = game.get_move(game_info)
+            game.play_move(game_info, move)
 
-        gagnant = game.getGagnant(jeu)
+        winner = game.get_winner(game_info)
 
-        if gagnant == 1:
+        if winner == 1:
             SCORE += 1
 
 
-    game.joueur1, game.joueur2 = game.joueur2, game.joueur1
-    for i in range(NB_PARTIES):
-        jeu = game.initialiseJeu()
+    game.player1, game.player2 = game.player2, game.player1
+    for i in range(NUM_ROUNDS):
+        game_info = game.init()
 
-        while not game.finJeu(jeu):
-            if len(game.getCoupsJoues(jeu)) <= 4:
-                coup = joueur_random.saisieCoup(jeu)
+        while not game.is_game_over(game_info):
+            if len(game.get_played_moves(game_info)) <= 4:
+                move = random.get_move(game_info)
             else:
-                coup = game.saisieCoup(jeu)
-            game.joueCoup(jeu, coup)
+                move = game.get_move(game_info)
+            game.play_move(game_info, move)
 
-        gagnant = game.getGagnant(jeu)
+        winner = game.get_winner(game_info)
 
-        if gagnant == 2:
+        if winner == 2:
             SCORE += 1
 
-    game.joueur1, game.joueur2 = game.joueur2, game.joueur1
+    game.player1, game.player2 = game.player2, game.player1
     return SCORE
 
 
 start = time.time()
 
 NB_GEN = 2
-THRESHOLD_FITNESS = 0.8 * 2 * NB_PARTIES // 1
-print(f"NB_PARTIES = {2 * NB_PARTIES}")
+THRESHOLD_FITNESS = 0.8 * 2 * NUM_ROUNDS // 1
+print(f"NUM_ROUNDS = {2 * NUM_ROUNDS}")
 print(f"THRESHOLD_FITNESS = {THRESHOLD_FITNESS}")
 
 for i in range(NB_GEN):
     ranked_solutions = []
     for s in tqdm(solutions):
-        game.joueur1.WEIGHTS = s
+        game.player1.WEIGHTS = s
         fitn = fitness()
         ranked_solutions.append((fitn, s))
 

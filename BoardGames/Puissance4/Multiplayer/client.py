@@ -11,13 +11,13 @@ sys.path.append(grandparent)
 import game
 import puissance4
 if game.GUI: import pygame
-import joueur_humain
+import Puissance4.Players.human
 import socket, pickle
 
 
 game.game = puissance4
-game.joueur1 = joueur_humain
-game.joueur2 = joueur_humain
+game.player1 = Puissance4.Players.human
+game.player2 = Puissance4.Players.human
 
 
 client = socket.socket()
@@ -30,28 +30,28 @@ print(f"PLAYER {PLAYER}")
 client.send(data)
 
 data = client.recv(2048)
-jeu = pickle.loads(data)
-game.game.draw_board(jeu) if game.GUI else game.affiche(jeu)
+game_info = pickle.loads(data)
+game.game.draw_board(game_info) if game.GUI else game.print_game(game_info)
 
 client.setblocking(0)
 
-while not game.finJeu(jeu):
+while not game.is_game_over(game_info):
     if game.GUI:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
 
-    if jeu[1] == PLAYER:
-        coup = game.saisieCoup(jeu)
-        game.joueCoup(jeu, coup)
-        client.send(pickle.dumps(jeu))
+    if game_info[1] == PLAYER:
+        move = game.get_move(game_info)
+        game.play_move(game_info, move)
+        client.send(pickle.dumps(game_info))
     else:
         try:
             data = client.recv(2048)
-            jeu = pickle.loads(data)
+            game_info = pickle.loads(data)
             print("The opponent has played")
         except: pass
-    game.game.draw_board(jeu) if game.GUI else game.affiche(jeu)
+    game.game.draw_board(game_info) if game.GUI else game.print_game(game_info)
 
 client.close()

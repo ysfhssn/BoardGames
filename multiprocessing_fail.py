@@ -5,67 +5,67 @@ import os
 dirname = os.path.dirname(__file__)
 parent = os.path.dirname(dirname)
 sys.path.append(parent)
-sys.path.append(os.path.join(dirname, 'Joueurs'))
+sys.path.append(os.path.join(dirname, 'Players'))
 import game
 import awele
-import joueur_humain, joueur_random, joueur_premier_coup
-import joueur_horizon, joueur_minimax, joueur_negamax
-import joueur_minimax_ab, joueur_negamax_ab, joueur_minimax_ab_order
-import Ayo, Ayo_ab
+import human, random, first_move
+import horizon, minimax, negamax
+import minimax_ab, negamax_ab, minimax_ab_order
+import ayo, ayo_ab
 import multiprocessing as mp
 import time
-JOUEURS_TREE = [Ayo, Ayo_ab, joueur_horizon, joueur_minimax, joueur_negamax, joueur_minimax_ab, joueur_negamax_ab, joueur_minimax_ab_order]
+JOUEURS_TREE = [ayo, ayo_ab, horizon, minimax, negamax, minimax_ab, negamax_ab, minimax_ab_order]
 
 
 game.game = awele
-game.joueur1 = joueur_minimax_ab_order
-game.joueur2 = joueur_minimax_ab_order
+game.player1 = minimax_ab_order
+game.player2 = minimax_ab_order
 
 
-NB_PARTIES_GAGNES_J1 = mp.Value("i", 0)
-NB_PARTIES_GAGNES_J2 = mp.Value("i", 0)
-NB_PARTIES_EGALITES = mp.Value("i", 0)
+NUM_ROUNDS_WON_P1 = mp.Value("i", 0)
+NUM_ROUNDS_WON_P2 = mp.Value("i", 0)
+NUM_ROUNDS_DRAWS = mp.Value("i", 0)
 def main_loop():
-    global NB_PARTIES_GAGNES_J1, NB_PARTIES_GAGNES_J2, NB_PARTIES_EGALITES
-    jeu = game.initialiseJeu()
-    #game.affiche(jeu)
+    global NUM_ROUNDS_WON_P1, NUM_ROUNDS_WON_P2, NUM_ROUNDS_DRAWS
+    game_info = game.init()
+    #game.print_game(game_info)
 
-    while not game.finJeu(jeu):
-        if len(game.getCoupsJoues(jeu)) <= 4:
-            coup = joueur_random.saisieCoup(jeu)
+    while not game.is_game_over(game_info):
+        if len(game.get_played_moves(game_info)) <= 4:
+            move = random.get_move(game_info)
         else:
-            coup = game.saisieCoup(jeu)
-        game.joueCoup(jeu, coup)
-        #game.affiche(jeu)
-        #game.changeJoueur(jeu) deja effectue dans joueCoup
+            move = game.get_move(game_info)
+        game.play_move(game_info, move)
+        #game.print_game(game_info)
+        #game.change_player(game_info) deja effectue dans play_move
 
-    gagnant = game.getGagnant(jeu)
+    winner = game.get_winner(game_info)
 
     print("\n-------------------------------------------------")
-    if game.joueur1 in JOUEURS_TREE:
-        print(f"NB_NOEUDS_J1 PARTIE : {game.joueur1.NB_NOEUDS}")
-        game.joueur1.NB_NOEUDS = 0
-    if game.joueur2 in JOUEURS_TREE:
-        print(f"NB_NOEUDS_J2 PARTIE : {game.joueur2.NB_NOEUDS}")
-        game.joueur2.NB_NOEUDS = 0
-    print(f"NB COUPS: {len(game.getCoupsJoues(jeu))}")
-    print(f"SCORE FINAL: {game.getScores(jeu)}")
+    if game.player1 in JOUEURS_TREE:
+        print(f"NUM_NODES_P1 ROUND : {game.player1.NUM_NODES}")
+        game.player1.NUM_NODES = 0
+    if game.player2 in JOUEURS_TREE:
+        print(f"NUM_NODES_P2 ROUND : {game.player2.NUM_NODES}")
+        game.player2.NUM_NODES = 0
+    print(f"NUM_MOVES: {len(game.get_played_moves(game_info))}")
+    print(f"FINAL SCORE: {game.get_scores(game_info)}")
 
-    if gagnant == 1:
-        print(f"GAGNANT PARTIE : Joueur {gagnant}")
-        NB_PARTIES_GAGNES_J1.value += 1
-    elif gagnant == 2:
-        print(f"GAGNANT PARTIE : Joueur {gagnant}")
-        NB_PARTIES_GAGNES_J2.value += 1
+    if winner == 1:
+        print(f"GAGNANT PARTIE : Joueur {winner}")
+        NUM_ROUNDS_WON_P1.value += 1
+    elif winner == 2:
+        print(f"GAGNANT PARTIE : Joueur {winner}")
+        NUM_ROUNDS_WON_P2.value += 1
     else:
         print("GAGNANT PARTIE : Egalite")
-        NB_PARTIES_EGALITES.value += 1
+        NUM_ROUNDS_DRAWS.value += 1
 
 def main():
-    NB_PARTIES = int(input("Nombre de parties: "))
+    NUM_ROUNDS = int(input("Nombre de parties: "))
     processes = []
     start = time.time()
-    for i in range(NB_PARTIES):
+    for i in range(NUM_ROUNDS):
         p = mp.Process(target=main_loop)
         processes.append(p)
         p.start()
@@ -73,15 +73,15 @@ def main():
     for p in processes:
         p.join()
     end = time.time()
-    temps = end - start
-    print(f"\nTemps total : {temps:.5f} seconds")
+    round_time = end - start
+    print(f"\nTotal time : {round_time:.5f} seconds")
 
     print("\n\n###########################################")
-    print(f"{game.joueur1.__name__.upper().split('.')[-1].split('_')[-1]} VS {game.joueur2.__name__.upper().split('.')[-1].split('_')[-1]}")
-    print("\nNB_PARTIES:          ", NB_PARTIES)
-    print("NB_PARTIES_GAGNES_J1:", NB_PARTIES_GAGNES_J1.value)
-    print("NB_PARTIES_GAGNES_J2:", NB_PARTIES_GAGNES_J2.value)
-    print("NB_PARTIES_EGALITES: ", NB_PARTIES_EGALITES.value)
+    print(f"{game.player1.__name__.upper().split('.')[-1].split('_')[-1]} VS {game.player2.__name__.upper().split('.')[-1].split('_')[-1]}")
+    print("\nNUM_ROUNDS:          ", NUM_ROUNDS)
+    print("NUM_ROUNDS_WON_P1:", NUM_ROUNDS_WON_P1.value)
+    print("NUM_ROUNDS_WON_P2:", NUM_ROUNDS_WON_P2.value)
+    print("NUM_ROUNDS_DRAWS: ", NUM_ROUNDS_DRAWS.value)
     print("###########################################")
 
 

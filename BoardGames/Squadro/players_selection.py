@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import sys
-from Squadro.Joueurs import joueur_humain, MASTER, MCTS
+from Squadro.Players import human, master, mcts
 import game
 if not game.GUI:
     print("GUI mode is off.")
@@ -19,15 +19,15 @@ def selection():
 
     ##############################################################################################
     buttons = [
-        Button(100, 50, "Human v Human", (joueur_humain, joueur_humain)),
-        Button(350, 50, "Human v AB", (joueur_humain, MASTER)),
-        Button(100, 150, "AB v Human", (MASTER, joueur_humain)),
-        Button(350, 150, "Human v MCTS", (joueur_humain, MCTS)),
-        Button(100, 250, "MCTS v Human", (MCTS, joueur_humain)),
-        Button(350, 250, "MCTS v AB", (MCTS, MASTER)),
-        Button(100, 350, "AB v MCTS", (MASTER, MCTS)),
-        Button(350, 350, "AB v AB", (MASTER, MASTER)),
-        Button(100, 450, "MCTS v MCTS", (MCTS, MCTS))
+        Button(100, 50, "Human v Human", (human, human)),
+        Button(350, 50, "Human v AB", (human, master)),
+        Button(100, 150, "AB v Human", (master, human)),
+        Button(350, 150, "Human v mcts", (human, mcts)),
+        Button(100, 250, "mcts v Human", (mcts, human)),
+        Button(350, 250, "mcts v AB", (mcts, master)),
+        Button(100, 350, "AB v mcts", (master, mcts)),
+        Button(350, 350, "AB v AB", (master, master)),
+        Button(100, 450, "mcts v mcts", (mcts, mcts))
     ]
     ###############################################################################################
 
@@ -44,8 +44,8 @@ def selection():
 
         for button in buttons:
             if button.draw_button(WIN):
-                game.joueur1 = button.modules[0]
-                game.joueur2 = button.modules[1]
+                game.player1 = button.modules[0]
+                game.player2 = button.modules[1]
                 main()
                 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
                 pygame.display.set_caption("Squadro")

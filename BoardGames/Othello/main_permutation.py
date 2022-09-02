@@ -4,12 +4,12 @@ import main
 import time
 
 def main_permutation():
-    main.game.joueur1, main.game.joueur2 = main.game.joueur2, main.game.joueur1
+    main.game.player1, main.game.player2 = main.game.player2, main.game.player1
     main.main()
     END = time.time()
-    temps = END - main.START
-    print(f"\n\nTemps total: {temps:.5f} seconds")
-    main.game.joueur1, main.game.joueur2 = main.game.joueur2, main.game.joueur1
+    round_time = END - main.START
+    print(f"\n\nTotal time: {round_time:.5f} seconds")
+    main.game.player1, main.game.player2 = main.game.player2, main.game.player1
 
 if __name__ == "__main__":
     main_permutation()

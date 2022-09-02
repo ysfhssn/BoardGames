@@ -5,72 +5,72 @@ import os
 dirname = os.path.dirname(__file__)
 parent = os.path.dirname(dirname)
 sys.path.append(parent)
-sys.path.append(os.path.join(dirname, 'Joueurs'))
+sys.path.append(os.path.join(dirname, 'Players'))
 import game
 import awele
-from Awele.Joueurs import joueur_random, MASTER, joueur_minimax_ab_order
+from Awele.Players import random, master, minimax_ab_order
 import time
 
 
 game.game = awele
-game.joueur1 = joueur_minimax_ab_order
-game.joueur2 = MASTER
+game.player1 = minimax_ab_order
+game.player2 = master
 
 
 # test depth 2
-game.joueur1.PLIES = 2
-game.joueur2.PLIES = 2
+game.player1.PLIES = 2
+game.player2.PLIES = 2
 
-# Il y aura au minimum 2*NB_PARTIES*len(j1.weights) parties
-NB_PARTIES = 5
+# Il y aura au minimum 2*NUM_ROUNDS*len(j1.weights) parties
+NUM_ROUNDS = 5
 def fitness():
     SCORE = 0
 
-    for i in range(NB_PARTIES):
-        jeu = game.initialiseJeu()
+    for i in range(NUM_ROUNDS):
+        game_info = game.init()
 
-        while not game.finJeu(jeu):
-            if len(game.getCoupsJoues(jeu)) <= 4:
-                coup = joueur_random.saisieCoup(jeu)
+        while not game.is_game_over(game_info):
+            if len(game.get_played_moves(game_info)) <= 4:
+                move = random.get_move(game_info)
             else:
-                coup = game.saisieCoup(jeu)
-            game.joueCoup(jeu, coup)
+                move = game.get_move(game_info)
+            game.play_move(game_info, move)
 
-        gagnant = game.getGagnant(jeu)
+        winner = game.get_winner(game_info)
 
-        if gagnant == 1:
+        if winner == 1:
             SCORE += 1
 
 
-    game.joueur1, game.joueur2 = game.joueur2, game.joueur1
-    for i in range(NB_PARTIES):
-        jeu = game.initialiseJeu()
+    game.player1, game.player2 = game.player2, game.player1
+    for i in range(NUM_ROUNDS):
+        game_info = game.init()
 
-        while not game.finJeu(jeu):
-            if len(game.getCoupsJoues(jeu)) <= 4:
-                coup = joueur_random.saisieCoup(jeu)
+        while not game.is_game_over(game_info):
+            if len(game.get_played_moves(game_info)) <= 4:
+                move = random.get_move(game_info)
             else:
-                coup = game.saisieCoup(jeu)
-            game.joueCoup(jeu, coup)
+                move = game.get_move(game_info)
+            game.play_move(game_info, move)
 
-        gagnant = game.getGagnant(jeu)
+        winner = game.get_winner(game_info)
 
-        if gagnant == 2:
+        if winner == 2:
             SCORE += 1
 
-    game.joueur1, game.joueur2 = game.joueur2, game.joueur1
+    game.player1, game.player2 = game.player2, game.player1
     return SCORE
 
 
 start = time.time()
 
 eps = 0.1
-n = len(game.joueur1.WEIGHTS)
-THRESHOLD_score_max = 0.8 * 2 * NB_PARTIES // 1
+n = len(game.player1.WEIGHTS)
+THRESHOLD_score_max = 0.8 * 2 * NUM_ROUNDS // 1
 
-"""# si joueur1 et joueur2 ont les memes poids
-game.joueur1.WEIGHTS = MASTER.WEIGHTS"""
-print(f"Au debut: {game.joueur1.WEIGHTS}")
+"""# si player1 et player2 ont les memes poids
+game.player1.WEIGHTS = master.WEIGHTS"""
+print(f"Au debut: {game.player1.WEIGHTS}")
 print(f"THRESHOLD_score_max = {THRESHOLD_score_max}\n")
 
 score_max = fitness()
@@ -80,7 +80,7 @@ if score_max < THRESHOLD_score_max:
     for i in range(n):
         # determiner le sens de l'amelioration
         sens = None
-        game.joueur1.WEIGHTS[i] += eps
+        game.player1.WEIGHTS[i] += eps
         score = fitness()
         if score >= THRESHOLD_score_max:
             score_max = score
@@ -94,7 +94,7 @@ if score_max < THRESHOLD_score_max:
             print(f"*** Sens + *** score_max = {score_max}")
 
         if sens is None:
-            game.joueur1.WEIGHTS[i] -= 2 * eps
+            game.player1.WEIGHTS[i] -= 2 * eps
             score = fitness()
             if score >= THRESHOLD_score_max:
                 score_max = score
@@ -108,12 +108,12 @@ if score_max < THRESHOLD_score_max:
                 print(f"*** Sens - *** score_max = {score_max}")
 
         if sens is None:
-            game.joueur1.WEIGHTS[i] += eps
+            game.player1.WEIGHTS[i] += eps
             print(f"Index {i}: Aucune modification")
             continue
 
         # tant qu'il y a amelioration a faire
-        game.joueur1.WEIGHTS[i] += eps * sens
+        game.player1.WEIGHTS[i] += eps * sens
         score = fitness()
         if score >= THRESHOLD_score_max:
             score_max = score
@@ -124,14 +124,14 @@ if score_max < THRESHOLD_score_max:
         while score > score_max:
             score_max = score
             print(f"\tAmelioration: score_max = {score_max}")
-            game.joueur1.WEIGHTS[i] += eps * sens
+            game.player1.WEIGHTS[i] += eps * sens
             score = fitness()
 
-        game.joueur1.WEIGHTS[i] -= eps * sens
-        print(f"Index {i}: {game.joueur1.WEIGHTS[i]}")
+        game.player1.WEIGHTS[i] -= eps * sens
+        print(f"Index {i}: {game.player1.WEIGHTS[i]}")
 
 
-print(f"\n*** FIN *** {game.joueur1.WEIGHTS}")
+print(f"\n*** FIN *** {game.player1.WEIGHTS}")
 print(f"\tscore_max = {score_max}")
 
 end = time.time()

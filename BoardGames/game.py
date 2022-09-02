@@ -3,156 +3,80 @@
 
 """"
     NOMENCLATURE A RESPECTER
-    coup = (int, int)
-    jeu = List[...] :
-        0: plateau      	List[List[int]]
-        1: joueur       	int (1 ou 2)
-        2: coups valides	List[(int, int)]
-        3: coups joues  	List[(int, int)]
-        4: scores       	List[int, int]
+    move = (int, int)
+    game_info = List[...] :
+        0: board      	List[List[int]]
+        1: player       int (1 ou 2)
+        2: valid moves	List[(int, int)]
+        3: played moves List[(int, int)]
+        4: scores       List[int, int]
 """
 
-game	= None #Contient le module du jeu specifique: awele ou othello
-joueur1	= None #Contient le module du joueur 1
-joueur2	= None #Contient le module du joueur 2
+game	= None
+player1	= None
+player2	= None
 GUI     = True
 
 
-############################## Fonctions minimales ##############################
+# Generic Functions
+def get_board(game_info):
+    return game_info[0]
 
-############### Fonctions utiles ###############
-def getPlateau(jeu):
-    """ jeu -> plateau
-        Retourne le plateau du jeu passe en parametre
-    """
-    return jeu[0]
+def get_player(game_info):
+    return game_info[1]
 
-def getJoueur(jeu):
-    """ jeu -> nat
-        Retourne le joueur a qui c'est le tour de jouer dans le jeu passe en parametre
-    """
-    return jeu[1]
+def change_player(game_info):
+    game_info[1] = 2 if game_info[1] == 1 else 1
 
-def changeJoueur(jeu):
-    """ jeu -> void
-        Change le joueur a qui c'est le tour de jouer dans le jeu passe en parametre (1 ou 2)
-    """
-    jeu[1] = 2 if jeu[1] == 1 else 1
-
-def getGagnant(jeu):
-    """ jeu -> nat
-        Retourne le numero du joueur gagnant apres avoir finalise la partie. Retourne 0 si match nul
-    """
-    if jeu[4][0] == jeu[4][1]:
+def get_winner(game_info):
+    if game_info[4][0] == game_info[4][1]:
         return 0
-    return 1 if jeu[4][0] > jeu[4][1] else 2
+    return 1 if game_info[4][0] > game_info[4][1] else 2
 
-# Attention ce getter est specifique a un jeu !!!
-def getCoupsValides(jeu):
-    """ jeu -> List[coup]
-        Retourne la liste des coups valides dans le jeu passe en parametre
-        Si None, alors on met a jour la liste des coups valides
-    """
-    return game.getCoupsValides(jeu)
+def get_valid_moves(game_info):
+    return game.get_valid_moves(game_info)
 
-def getCoupsJoues(jeu):
-    """ jeu -> List[coup]
-        Retourne la liste des coups joues dans le jeu passe en parametre
-    """
-    return jeu[3]
+def get_played_moves(game_info):
+    return game_info[3]
 
-def getScores(jeu):
-    """ jeu -> Pair[nat nat]
-        Retourne les scores du jeu passe en parametre
-    """
-    return jeu[4]
+def get_scores(game_info):
+    return game_info[4]
 
-def getScore(jeu, joueur):
-    """ jeu * nat -> int
-        Retourne le score du joueur
-        Hypothese: le joueur est 1 ou 2
-    """
-    return jeu[4][0] if joueur == 1 else jeu[4][1]
+def get_score(game_info, player):
+    return game_info[4][0] if player == 1 else game_info[4][1]
 
-def getCaseVal(jeu, ligne, colonne):
-    """ jeu * nat * nat -> nat
-        Retourne le contenu de la case ligne,colonne du jeu
-        Hypothese: les numeros de ligne et colonne appartiennent bien au plateau  : ligne<=getNbLignes(jeu) and colonne<=getNbColonnes(jeu)
-    """
-    return jeu[0][ligne][colonne]
+def get_position_value(game_info, row, col):
+    return game_info[0][row][col]
 
-def getCopieJeu(jeu):
-    """ jeu -> jeu
-        Retourne une copie du jeu passe en parametre
-        Quand on copie un jeu on en calcule forcement les coups valides avant
-    """
+def get_game_copy(game_info):
     jeu_copy = []
-    for i in jeu:
+    for i in game_info:
         if isinstance(i, list):
             if i != [] and isinstance(i[0], list): jeu_copy.append([ii[:] for ii in i])
             else: jeu_copy.append(i[:])
         else: jeu_copy.append(i)
     return jeu_copy
 
-def coupValide(jeu, coup):
-    """ jeu * coup -> bool
-        Retourne vrai si le coup appartient a la liste de coups valides du jeu
-    """
-    return coup in jeu[2]
 
+# Specific functions
+def init():
+    return game.init()
 
+def init_test(key=0):
+    return game.init_test(key)
 
-######### Fonctions specifiques a un jeu #########
-def initialiseJeu():
-    """ void -> jeu
-        Initialise le jeu (nouveau plateau, liste des coups joues vide, liste des coups valides None, scores a 0 et joueur = 1)
-    """
-    return game.initialiseJeu()
+def is_game_over(game_info):
+    return game.is_game_over(game_info)
 
-def initialiseInteressant(key=0):
-    return game.initialiseInteressant(key)
+def get_move(game_info):
+    player = get_player(game_info)
+    return player1.get_move(game_info) if player == 1 else player2.get_move(game_info)
 
-def finJeu(jeu):
-    """ jeu -> bool
-        Retourne vrai si c'est la fin du jeu
-    """
-    return game.finJeu(jeu)
+def play_move(game_info, move):
+    game.play_move(game_info, move)
 
-def saisieCoup(jeu):
-    """ jeu -> coup
-        Retourne un coup a jouer
-        On suppose que la fonction n'est appelee que si il y a au moins un coup valide possible
-        et qu'elle retourne obligatoirement un coup valide
-    """
-    joueur = getJoueur(jeu)
-    return joueur1.saisieCoup(jeu) if joueur == 1 else joueur2.saisieCoup(jeu)
-
-def joueCoup(jeu, coup):
-    """ jeu * coup -> void
-        Joue un coup a l'aide de la fonction joueCoup defini dans le module game
-        Hypothese: le coup est valide
-        Met tous les champs de jeu a jour (sauf coups valides qui est fixe a None)
-    """
-    game.joueCoup(jeu, coup)
-
-def affiche(jeu):
-    """ jeu -> void
-        Affiche l'etat du jeu de la maniere suivante :
-            Coup joue = <dernier coup>
-            Scores = <score 1>, <score 2>
-            Plateau :
-
-                       |       0     |     1       |      2     |      ...
-                ------------------------------------------------
-                    0  | <Case 0,0>  | <Case 0,1>  | <Case 0,2> |      ...
-                ------------------------------------------------
-                    1  | <Case 1,0>  | <Case 1,1>  | <Case 1,2> |      ...
-                ------------------------------------------------
-                  ...  |     ...     |     ...     |     ...    |      ...
-
-            Joueur <joueur>, a vous de jouer
-    """
-    game.affiche(jeu)
+def print_game(game_info):
+    game.print_game(game_info)
 
 
 if __name__ == "__main__":

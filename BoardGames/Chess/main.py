@@ -7,9 +7,9 @@ parent = os.path.dirname(dirname)
 sys.path.append(parent)
 import game
 if game.GUI: import pygame
-from Chess.Joueurs import joueur_minimax_ab, joueur_minimax_ab_opti, MASTER, MCTS, joueur_random
+from Chess.Players import minimax_ab, minimax_ab_opti, master, mcts, random_move
 import time
-JOUEURS_TREE = [joueur_minimax_ab, joueur_minimax_ab_opti, MASTER, MCTS]
+JOUEURS_TREE = [minimax_ab, minimax_ab_opti, master, mcts]
 
 
 START = None
@@ -17,24 +17,24 @@ def main():
     from Chess import chess
     game.game = chess
     global START
-    NB_PARTIES = N = 1 #int(input("Nombre de parties: "))
+    NUM_ROUNDS = N = 1 #int(input("Number of rounds: "))
     START = time.time()
-    NB_PARTIES_GAGNES_J1 = 0
-    NB_PARTIES_GAGNES_J2 = 0
-    NB_PARTIES_EGALITES = 0
+    NUM_ROUNDS_WON_P1 = 0
+    NUM_ROUNDS_WON_P2 = 0
+    NUM_ROUNDS_DRAWS = 0
 
     i = 0
-    while i < NB_PARTIES:
+    while i < NUM_ROUNDS:
         print(f"\n\n########## DEBUT PARTIE {i+1} ##########")
-        jeu = game.initialiseJeu()
-        #jeu = game.initialiseInteressant("EN PASSANT")
-        #game.affiche(jeu)
+        game_info = game.init()
+        #game_info = game.init_test("EN PASSANT")
+        #game.print_game(game_info)
         if game.GUI:
             pygame.display.set_mode((chess.WIDTH, chess.HEIGHT))
-            chess.draw_board(jeu)
+            chess.draw_board(game_info)
 
         start = time.time()
-        while not game.finJeu(jeu):
+        while not game.is_game_over(game_info):
             if game.GUI:
                 pygame.display.set_mode((chess.WIDTH, chess.HEIGHT))
                 for event in pygame.event.get():
@@ -42,41 +42,41 @@ def main():
                         pygame.quit()
                         sys.exit(0)
 
-            start_coup = time.time()
-            if len(game.getCoupsJoues(jeu)) < 0: coup = joueur_random.saisieCoup(jeu)
-            else: coup = game.saisieCoup(jeu)
-            end_coup = time.time()
-            temps_coup = end_coup - start_coup
-            if coup is None: return # human quit
+            move_start = time.time()
+            if len(game.get_played_moves(game_info)) < 0: move = random_move.get_move(game_info)
+            else: move = game.get_move(game_info)
+            move_end = time.time()
+            move_time = move_end - move_start
+            if move is None: return # human quit
 
-            print_stats_coup(jeu, temps_coup)
+            print_stats_coup(game_info, move_time)
 
-            game.joueCoup(jeu, coup)
-            if game.GUI: chess.draw_board(jeu)
-            #game.affiche(jeu)
-            #game.changeJoueur(jeu) deja effectue dans joueCoup
+            game.play_move(game_info, move)
+            if game.GUI: chess.draw_board(game_info)
+            #game.print_game(game_info)
+            #game.change_player(game_info) deja effectue dans play_move
         end = time.time()
-        temps = end - start
+        round_time = end - start
 
-        gagnant = game.getGagnant(jeu)
+        winner = game.get_winner(game_info)
 
-        print(f"TEMPS PARTIE {i+1}: {temps:.5f} seconds")
-        print(f"NB COUPS: {len(game.getCoupsJoues(jeu))}")
-        print(f"SCORE FINAL: {game.getScores(jeu)}")
+        print(f"ROUND TIME {i+1}: {round_time:.5f} seconds")
+        print(f"NUM_MOVES: {len(game.get_played_moves(game_info))}")
+        print(f"FINAL SCORE: {game.get_scores(game_info)}")
 
-        if gagnant == 1:
-            print(f"GAGNANT PARTIE {i+1}: Joueur {gagnant}")
-            NB_PARTIES_GAGNES_J1 += 1
-        elif gagnant == 2:
-            print(f"GAGNANT PARTIE {i+1}: Joueur {gagnant}")
-            NB_PARTIES_GAGNES_J2 += 1
+        if winner == 1:
+            print(f"WINNER ROUND {i+1}: Player {winner}")
+            NUM_ROUNDS_WON_P1 += 1
+        elif winner == 2:
+            print(f"WINNER ROUND {i+1}: Player {winner}")
+            NUM_ROUNDS_WON_P2 += 1
         else:
-            print(f"GAGNANT PARTIE {i+1}: Egalite")
-            NB_PARTIES_EGALITES += 1
+            print(f"WINNER ROUND {i+1}: Draw")
+            NUM_ROUNDS_DRAWS += 1
 
         i += 1
 
-        if game.GUI and i == NB_PARTIES:
+        if game.GUI and i == NUM_ROUNDS:
             pa = pygame.transform.scale(pygame.image.load(os.path.join(dirname, "./Images/playagain.jpg")).convert_alpha(), (200,90))
             pa_rect = pa.get_rect()
             pa_rect.topleft = (0, chess.HEIGHT+5)
@@ -91,40 +91,40 @@ def main():
                 x, y = pygame.mouse.get_pos()
                 if pa_rect.collidepoint((x,y)):
                     if pygame.mouse.get_pressed()[0]:
-                        NB_PARTIES += N
+                        NUM_ROUNDS += N
                         time.sleep(0.1)
                         break
 
 
     print("\n\n###########################################")
-    print(f"{game.joueur1.__name__.upper().split('.')[-1].split('_')[-1]} VS {game.joueur2.__name__.upper().split('.')[-1].split('_')[-1]}")
-    print("\nNB_PARTIES:          ", NB_PARTIES)
-    print("NB_PARTIES_GAGNES_J1:", NB_PARTIES_GAGNES_J1)
-    print("NB_PARTIES_GAGNES_J2:", NB_PARTIES_GAGNES_J2)
-    print("NB_PARTIES_EGALITES: ", NB_PARTIES_EGALITES)
+    print(f"{game.player1.__name__.upper().split('.')[-1].split('_')[-1]} VS {game.player2.__name__.upper().split('.')[-1].split('_')[-1]}")
+    print("\nNUM_ROUNDS:          ", NUM_ROUNDS)
+    print("NUM_ROUNDS_WON_P1:", NUM_ROUNDS_WON_P1)
+    print("NUM_ROUNDS_WON_P2:", NUM_ROUNDS_WON_P2)
+    print("NUM_ROUNDS_DRAWS: ", NUM_ROUNDS_DRAWS)
     print("###########################################")
 
 
-def print_stats_coup(jeu, temps_coup):
-    if jeu[1] == 1:
-        joueur = game.joueur1.__name__.upper().split('.')[-1].split('_')[-1].split('.')[-1].split('_')[-1]
-        print(f"TEMPS COUP {joueur}: {temps_coup:.5f} seconds")
-        if game.joueur1 in JOUEURS_TREE:
-            print(f"\tNB_NOEUDS: {game.joueur1.NB_NOEUDS}")
-            if joueur == "OPTI": print(f"\tNB_CACHE: {game.joueur1.NB_CACHE}")
-    if jeu[1] == 2:
-        joueur = game.joueur2.__name__.upper().split('.')[-1].split('_')[-1].split('.')[-1].split('_')[-1]
-        print(f"TEMPS COUP {joueur}: {temps_coup:.5f} seconds")
-        if game.joueur2 in JOUEURS_TREE:
-            print(f"\tNB_NOEUDS: {game.joueur2.NB_NOEUDS}")
-            if joueur == "OPTI": print(f"\tNB_CACHE: {game.joueur2.NB_CACHE}")
+def print_stats_coup(game_info, move_time):
+    if game_info[1] == 1:
+        player = game.player1.__name__.upper().split('.')[-1].split('_')[-1].split('.')[-1].split('_')[-1]
+        print(f"MOVE TIME {player}: {move_time:.5f} seconds")
+        if game.player1 in JOUEURS_TREE:
+            print(f"\tNUM_NODES: {game.player1.NUM_NODES}")
+            if player == "OPTI": print(f"\tNUM_NODES_CACHE: {game.player1.NUM_NODES_CACHE}")
+    if game_info[1] == 2:
+        player = game.player2.__name__.upper().split('.')[-1].split('_')[-1].split('.')[-1].split('_')[-1]
+        print(f"MOVE TIME {player}: {move_time:.5f} seconds")
+        if game.player2 in JOUEURS_TREE:
+            print(f"\tNUM_NODES: {game.player2.NUM_NODES}")
+            if player == "OPTI": print(f"\tNUM_NODES_CACHE: {game.player2.NUM_NODES_CACHE}")
 
 if __name__ == "__main__":
     #######################
-    game.joueur1 = MASTER
-    game.joueur2 =  MCTS
+    game.player1 = master
+    game.player2 =  mcts
     #######################
     main()
     END = time.time()
-    temps = END - START
-    print(f"\n\nTemps total: {temps:.5f} seconds")
+    round_time = END - START
+    print(f"\n\nTotal time: {round_time:.5f} seconds")

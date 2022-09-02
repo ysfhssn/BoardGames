@@ -9,15 +9,15 @@ import game
 game.GUI = True
 import othello
 if game.GUI: import pygame
-from Othello.Joueurs import joueur_minimax_ab, joueur_negamax_ab, joueur_random
+from Othello.Players import minimax_ab, negamax_ab, random
 import time
 import random
 from tqdm import tqdm
 
 
 game.game = othello
-game.joueur1 = joueur_minimax_ab
-game.joueur2 = joueur_negamax_ab
+game.player1 = minimax_ab
+game.player2 = negamax_ab
 # game.GUI = False
 
 
@@ -30,72 +30,72 @@ for _ in range(NB_SOLUTIONS):
                       random.uniform(0,1)])
 
 
-NB_PARTIES = 2
+NUM_ROUNDS = 2
 def fitness():
     SCORE = 0
 
-    for i in range(NB_PARTIES):
-        jeu = game.initialiseJeu()
-        if game.GUI: game.game.draw_board(jeu)
+    for i in range(NUM_ROUNDS):
+        game_info = game.init()
+        if game.GUI: game.game.draw_board(game_info)
 
-        while not game.finJeu(jeu):
+        while not game.is_game_over(game_info):
             if game.GUI:
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         pygame.quit()
                         sys.exit(0)
-            if len(game.getCoupsJoues(jeu)) <= 4:
-                coup = joueur_random.saisieCoup(jeu)
+            if len(game.get_played_moves(game_info)) <= 4:
+                move = random.get_move(game_info)
             else:
-                coup = game.saisieCoup(jeu)
-            game.joueCoup(jeu, coup)
-            if game.GUI: game.game.draw_board(jeu)
+                move = game.get_move(game_info)
+            game.play_move(game_info, move)
+            if game.GUI: game.game.draw_board(game_info)
 
-        gagnant = game.getGagnant(jeu)
+        winner = game.get_winner(game_info)
 
-        if gagnant == 1:
+        if winner == 1:
             SCORE += 1
 
 
-    game.joueur1, game.joueur2 = game.joueur2, game.joueur1
-    for i in range(NB_PARTIES):
-        jeu = game.initialiseJeu()
-        if game.GUI: game.game.draw_board(jeu)
+    game.player1, game.player2 = game.player2, game.player1
+    for i in range(NUM_ROUNDS):
+        game_info = game.init()
+        if game.GUI: game.game.draw_board(game_info)
 
-        while not game.finJeu(jeu):
+        while not game.is_game_over(game_info):
             if game.GUI:
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         pygame.quit()
                         sys.exit(0)
 
-            if len(game.getCoupsJoues(jeu)) <= 4:
-                coup = joueur_random.saisieCoup(jeu)
+            if len(game.get_played_moves(game_info)) <= 4:
+                move = random.get_move(game_info)
             else:
-                coup = game.saisieCoup(jeu)
-            game.joueCoup(jeu, coup)
-            if game.GUI: game.game.draw_board(jeu)
+                move = game.get_move(game_info)
+            game.play_move(game_info, move)
+            if game.GUI: game.game.draw_board(game_info)
 
-        gagnant = game.getGagnant(jeu)
+        winner = game.get_winner(game_info)
 
-        if gagnant == 2:
+        if winner == 2:
             SCORE += 1
 
-    game.joueur1, game.joueur2 = game.joueur2, game.joueur1
+    game.player1, game.player2 = game.player2, game.player1
     return SCORE
 
 
 start = time.time()
 
 NB_GEN = 2
-THRESHOLD_FITNESS = 0.75 * 2 * NB_PARTIES // 1
-print(f"NB_PARTIES = {2 * NB_PARTIES}")
+THRESHOLD_FITNESS = 0.75 * 2 * NUM_ROUNDS // 1
+print(f"NUM_ROUNDS = {2 * NUM_ROUNDS}")
 print(f"THRESHOLD_FITNESS = {THRESHOLD_FITNESS}")
 
 for i in range(NB_GEN):
     ranked_solutions = []
     for s in tqdm(solutions):
-        game.joueur1.WEIGHTS = s
+        game.player1.WEIGHTS = s
         fitn = fitness()
         ranked_solutions.append( (fitn, s) )
 

@@ -30,7 +30,7 @@ def get_move(game_info):
 
 def decision(game_info):
     vmax = -INFINITY
-    bestCoup = None
+    bestMove = None
 
     for move in game.get_valid_moves(game_info):
         global NUM_NODES
@@ -41,9 +41,9 @@ def decision(game_info):
         v = -negamax(j, PLIES-1, -1)
         if v > vmax:
             vmax = v
-            bestCoup = move
+            bestMove = move
 
-    return bestCoup
+    return bestMove
 
 def negamax(game_info, plies, color):
     if game.GUI:
@@ -80,12 +80,12 @@ def negamax(game_info, plies, color):
 
 ############################################################################
 
-def getInputs(game_info):
+def get_inputs(game_info):
     return [positional(game_info), d_scores(game_info), d_mobility(game_info)]
 
 def heuristic(game_info):
     """ Linear combination of weights and elementary heuristics """
-    inputs = getInputs(game_info)
+    inputs = get_inputs(game_info)
     assert(len(inputs) == len(WEIGHTS))
     return sum(h * w for h, w in zip(inputs, WEIGHTS))
 
@@ -113,7 +113,7 @@ def positional(game_info):
     return cpt
 
 def d_scores(game_info):
-    return game.get_score(game_info, AI_PLAYER) - game.get_score(game_info, OPPONENT)
+    return game.get_score_player(game_info, AI_PLAYER) - game.get_score_player(game_info, OPPONENT)
 
 def d_mobility(game_info):
     j = game.get_game_copy(game_info)

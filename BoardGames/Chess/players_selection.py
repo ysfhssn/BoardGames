@@ -5,7 +5,7 @@ import os
 dirname = os.path.dirname(__file__)
 parent = os.path.dirname(dirname)
 sys.path.append(parent)
-from Chess.Players import human, master, mcts
+from Chess.Players import human, master, mcts, sfish
 import game
 if not game.GUI:
     print("GUI mode is off.")
@@ -14,9 +14,6 @@ import pygame
 from Chess.main import main
 
 
-##################################################################################################
-##################                      SELECTION DES JOUEURS                   ##################
-##################################################################################################
 def selection():
     pygame.init()
     from button import Button
@@ -26,12 +23,16 @@ def selection():
         Button(100, 50, "Human v Human", (human, human)),
         Button(350, 50, "Human v AB", (human, master)),
         Button(100, 150, "AB v Human", (master, human)),
-        Button(350, 150, "Human v mcts", (human, mcts)),
-        Button(100, 250, "mcts v Human", (mcts, human)),
-        Button(350, 250, "mcts v AB", (mcts, master)),
-        Button(100, 350, "AB v mcts", (master, mcts)),
-        Button(350, 350, "AB v AB", (master, master)),
-        Button(100, 450, "mcts v mcts", (mcts, mcts))
+        Button(350, 150, "Human v sfish", (human, sfish)),
+        Button(100, 250, "sfish v Human", (sfish, human)),
+        Button(350, 250, "AB v AB", (master, master)),
+        Button(100, 350, "sfish v sfish", (sfish, sfish)),
+        Button(350, 350, "AB v sfish", (master, sfish)),
+        Button(100, 450, "sfish v AB", (sfish, master)),
+        Button(350, 450, "AB v mcts", (master, mcts)),
+        Button(100, 550, "mcts v AB", (mcts, master)),
+        Button(350, 550, "mcts v sfish", (mcts, sfish)),
+        Button(100, 650, "sfish v mcts", (sfish, mcts)),
     ]
     ###############################################################################################
 

@@ -130,10 +130,10 @@ def print_game(game_info):
     print(f"Scores = {game_info[4]}")
 
     if game.GUI:
-        print(f"Joueur {game_info[1]}, a vous de jouer\n")
+        print(f"Player {game_info[1]}, it's your turn\n")
         return
 
-    print("Plateau: ")
+    print("Board: ")
     board = game_info[0]
     for x in range(len(board[0])):
         if x == 0:
@@ -154,7 +154,7 @@ def print_game(game_info):
         print()
         print("--------------------------------------------------------------")
 
-    print(f"Joueur {game_info[1]}, a vous de jouer\n")
+    print(f"Player {game_info[1]}, it's your turn\n")
 
 def draw_board(game_info):
     ROWS = 8

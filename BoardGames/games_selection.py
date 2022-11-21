@@ -7,9 +7,6 @@ import Awele.players_selection, Chess.players_selection, Othello.players_selecti
 dirname = os.path.dirname(__file__)
 
 
-##################################################################################################
-##################                      SELECTION DES JEUX                      ##################
-##################################################################################################
 def selection():
     pygame.init()
     from button import Button
@@ -53,3 +50,7 @@ def selection():
                 pygame.display.set_caption("Board Games")
 
         pygame.display.update()
+
+
+if __name__ == "__main__":
+	selection()

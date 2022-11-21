@@ -5,12 +5,12 @@ def get_move(game_info):
     col = None
 
     if not game.GUI:
-        print("Coups valides: ", game.get_valid_moves(game_info))
+        print("Valid moves: ", game.get_valid_moves(game_info))
 
-        col = int(input("Votre col: "))
+        col = int(input("Col: "))
 
         while col not in game.get_valid_moves(game_info):
-            col = int(input("Coup invalide !\nVotre col: "))
+            col = int(input("Invalid move !\nCol: "))
 
         return col
 

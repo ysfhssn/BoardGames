@@ -13,17 +13,17 @@ def get_move(game_info):
     dj = None
 
     if not game.GUI:
-        print("Coups valides: ", game.get_valid_moves(game_info))
-        i = int(input("Votre row: "))
-        j = int(input("Votre col: "))
-        di = int(input("Votre row de deplacement: "))
-        dj = int(input("Votre col de deplacement: "))
+        print("Valid moves: ", game.get_valid_moves(game_info))
+        i = int(input("Row: "))
+        j = int(input("Col: "))
+        di = int(input("Offset row: "))
+        dj = int(input("Offset col: "))
         while (i, j, di, dj) not in game.get_valid_moves(game_info):
-            print("Coup invalide !")
-            i = int(input("Votre row: "))
-            j = int(input("Votre col: "))
-            di = int(input("Votre row de deplacement: "))
-            dj = int(input("Votre col de deplacement: "))
+            print("Invalid move !")
+            i = int(input("Row: "))
+            j = int(input("Col: "))
+            di = int(input("Offset row: "))
+            dj = int(input("Offset col: "))
         return (i, j, di, dj)
 
     else:
@@ -49,11 +49,9 @@ def get_move(game_info):
                     if piece[0] == " ": continue
                     pygame.draw.rect(WIN, (129,150,105), (j*SIZE,i*SIZE,SIZE,SIZE))
                     if piece[0] == "b":
-                        key = "b" + piece[1]
-                        WIN.blit(IMAGES[key], (j*SIZE,i*SIZE))
+                        WIN.blit(IMAGES[piece], (j*SIZE,i*SIZE))
                     else:
-                        key = "w" + piece[1]
-                        WIN.blit(IMAGES[key], (j*SIZE,i*SIZE))
+                        WIN.blit(IMAGES[piece], (j*SIZE,i*SIZE))
 
                     for ii, jj, dii, djj in get_valid_moves_of_piece(game_info, game_info[0][i][j], i, j):
                         #print(game_info[0][i][j], get_valid_moves_of_piece(game_info, game_info[0][i][j], i, j))

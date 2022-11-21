@@ -30,7 +30,7 @@ def get_move(game_info):
 
 def decision(game_info, alpha, beta):
     vmax = -INFINITY
-    bestCoup = None
+    bestMove = None
 
     for move in game.get_valid_moves(game_info):
         global NUM_NODES
@@ -41,11 +41,11 @@ def decision(game_info, alpha, beta):
         v = -negamax(j, PLIES-1, -1, -beta, -alpha)
         if v > vmax:
             vmax = v
-            bestCoup = move
+            bestMove = move
         if v > alpha:
             alpha = v
 
-    return bestCoup
+    return bestMove
 
 def negamax(game_info, plies, color, alpha, beta):
     ####### GOAL STATE EVALUATION #######
@@ -80,18 +80,18 @@ def negamax(game_info, plies, color, alpha, beta):
 
 ############################################################################
 
-def getInputs(game_info):
+def get_inputs(game_info):
     return [d_scores(game_info), d_grains(game_info), ai_wk_pits(game_info), op_wk_pits(game_info)]
 
 def heuristic(game_info):
     """ Linear combination of weights and elementary heuristics """
-    inputs = getInputs(game_info)
+    inputs = get_inputs(game_info)
     assert(len(inputs) == len(WEIGHTS))
     return sum(h * w for h, w in zip(inputs, WEIGHTS))
 
 
 def d_scores(game_info):
-    return game.get_score(game_info, AI_PLAYER) - game.get_score(game_info, OPPONENT)
+    return game.get_score_player(game_info, AI_PLAYER) - game.get_score_player(game_info, OPPONENT)
 
 def d_grains(game_info):
     return sum(game_info[0][AI_PLAYER-1]) - sum(game_info[0][OPPONENT-1])

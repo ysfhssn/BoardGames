@@ -1,0 +1,4 @@
+pygame
+tqdm
+stockfish
+auto-py-to-exe

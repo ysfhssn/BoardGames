@@ -44,7 +44,7 @@ def get_move(game_info):
 
 def decision(game_info):
     vmax = -INFINITY
-    bestCoup = None
+    bestMove = None
 
     for move in game.get_valid_moves(game_info):
         global NUM_NODES
@@ -55,9 +55,9 @@ def decision(game_info):
         v = minimax(j, PLIES-1, False)
         if v > vmax:
             vmax = v
-            bestCoup = move
+            bestMove = move
 
-    return bestCoup
+    return bestMove
 
 def minimax(game_info, plies, maximizingPlayer):
 	####### GOAL STATE EVALUATION #######
@@ -103,13 +103,13 @@ def minimax(game_info, plies, maximizingPlayer):
 
 ############################################################################
 
-def getInputs(game_info):
+def get_inputs(game_info):
     return [h1(game_info), h2(game_info), h3(game_info), h4(game_info), h5(game_info), h6(game_info),
             h7(game_info), h8(game_info), h9(game_info), h10(game_info), h11(game_info), h12(game_info)]
 
 def heuristic(game_info):
     """ Linear combination of weights and elementary heuristics """
-    inputs = getInputs(game_info)
+    inputs = get_inputs(game_info)
     assert(len(inputs) == len(WEIGHTS))
     return sum(h * w for h, w in zip(inputs, WEIGHTS))
 
@@ -269,13 +269,13 @@ def h9(game_info):
     """ The current score of the opponent.
         Range: 0 – 48.
     """
-    return -game.get_score(game_info, OPPONENT)
+    return -game.get_score_player(game_info, OPPONENT)
 
 def h10(game_info):
     """ The current score of ayo.
         Range: 0 – 48.
     """
-    return game.get_score(game_info, AI_PLAYER)
+    return game.get_score_player(game_info, AI_PLAYER)
 
 def h11(game_info):
     """ The number of empty pits on the oponent’s side.

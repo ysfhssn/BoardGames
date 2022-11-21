@@ -14,9 +14,6 @@ import pygame
 from Othello.main import main
 
 
-##################################################################################################
-##################                      SELECTION DES JOUEURS                   ##################
-##################################################################################################
 def selection():
     pygame.init()
     from button import Button
@@ -50,7 +47,7 @@ def selection():
             if button.draw_button(WIN):
                 game.player1 = button.modules[0]
                 game.player2 = button.modules[1]
-                main.main()
+                main()
                 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
                 pygame.display.set_caption("Othello")
 

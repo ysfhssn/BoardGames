@@ -34,21 +34,21 @@ def get_move(game_info):
 
     return decision(game_info, -INFINITY, INFINITY)
 
-def order_coups(game_info, coupsPossibles, reverse):
-    ranked_coups = []
-    for move in coupsPossibles:
+def order_moves(game_info, movesPossibles, reverse):
+    ranked_moves = []
+    for move in movesPossibles:
         game_copy = game.get_game_copy(game_info)
         game.play_move(game_copy, move)
         score = heuristic(game_copy)
-        ranked_coups.append((score, move))
-    ranked_coups.sort(reverse=reverse)
-    return [rc[1] for rc in ranked_coups]
+        ranked_moves.append((score, move))
+    ranked_moves.sort(reverse=reverse)
+    return [rc[1] for rc in ranked_moves]
 
 def decision(game_info, alpha, beta):
     vmax = -INFINITY
-    bestCoup = None
+    bestMove = None
 
-    for move in order_coups(game_info, game.get_valid_moves(game_info), True):
+    for move in order_moves(game_info, game.get_valid_moves(game_info), True):
         global NUM_NODES
         NUM_NODES += 1
         j = game.get_game_copy(game_info)
@@ -57,12 +57,12 @@ def decision(game_info, alpha, beta):
         v = minimax(j, PLIES-1, False, alpha, beta)
         if v > vmax:
             vmax = v
-            bestCoup = move
+            bestMove = move
     if game.GUI:
         for event in pygame.event.get():
             if event.type == pygame.QUIT: return None
 
-    return bestCoup
+    return bestMove
 
 def minimax(game_info, plies, maximizingPlayer, alpha, beta):
 	####### GOAL STATE EVALUATION #######
@@ -110,18 +110,18 @@ def minimax(game_info, plies, maximizingPlayer, alpha, beta):
 
 ############################################################################
 
-def getInputs(game_info):
+def get_inputs(game_info):
     return [score(game_info, AI_PLAYER), score(game_info, OPPONENT), pawn_score(game_info, AI_PLAYER), knight_score(game_info, AI_PLAYER),
             bishop_score(game_info, AI_PLAYER), rook_score(game_info, AI_PLAYER), queen_score(game_info, AI_PLAYER), king_score(game_info, AI_PLAYER)]
 
 def heuristic(game_info):
     """ Linear combination of weights and elementary heuristics """
-    inputs = getInputs(game_info)
+    inputs = get_inputs(game_info)
     assert(len(inputs) == len(WEIGHTS))
     return sum(h * w for h, w in zip(inputs, WEIGHTS))
 
 def score(game_info, player):
-    cpt = game_info[4][player-1+2]
+    cpt = game.get_score_player(game_info, player) * 100
     return cpt if player == AI_PLAYER else -cpt
 
 
@@ -264,7 +264,7 @@ king_b_pst_ending = [king_w_pst_ending[i] for i in reversed(range(8))]
 def king_score(game_info, player):
     board = game_info[0]
     cpt = 0
-    opening_phase = game_info[4][2] <= 2000 and game_info[4][3] <= 2000
+    opening_phase = game_info[4][-1][0] * 100 <= 2000 and game_info[4][-1][1] * 100 <= 2000
     for i in range(8):
         for j in range(8):
             if board[i][j][1] == "K":

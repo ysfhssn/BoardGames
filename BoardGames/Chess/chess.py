@@ -6,19 +6,20 @@ dirname = os.path.dirname(__file__)
 parent = os.path.dirname(dirname)
 sys.path.append(parent)
 import game
-import math
-INFINITY = math.inf
+
+INFINITY = float("inf")
 
 """"
     NOMENCLATURE A RESPECTER
     move = (int, int)
     game_info = List[...] :
-        0: board          List[List[int]]
-        1: player           int (1 ou 2)
-        2: valid moves    List[(int, int, int, int)]
-        3: played moves      List[(int, int, int, int)]
-        4: scores           List[int, int]
-        5: king first move  List[bool, bool]
+        0: board                        List[List[int]]
+        1: player                       int (1 ou 2)
+        2: valid moves                  List[(int, int, int, int)]
+        3: played moves                 List[(int, int, int, int)]
+        4: scores                       List[(int, int)]
+        5: king first move              List[bool, bool]
+        6: promotion moves indexes      Set[int]
 """
 
 if game.GUI:
@@ -49,6 +50,7 @@ if game.GUI:
     IMAGES = {"bg": bg, "bP": bP, "bR": bR, "bN": bN, "bB": bB, "bQ": bQ, "bK": bK,
                         "wP": wP, "wR": wR, "wN": wN, "wB": wB, "wQ": wQ, "wK": wK}
 
+N = 8 - 1
 
 def init():
     """ void -> game_info
@@ -64,7 +66,7 @@ def init():
         ["wP", "wP", "wP", "wP", "wP", "wP", "wP", "wP"],
         ["wR", "wN", "wB", "wQ", "wK", "wB", "wN", "wR"],
     ]
-    return [board, 1, None, [], [0,0,0,0], [[True,True], [True,True]]]
+    return [board, 1, None, [], [(0,0)], [[True,True], [True,True]], set()]
 
 def init_test(key):
     game_info = init()
@@ -73,7 +75,7 @@ def init_test(key):
             # Test castling
             "CASTLING": [
                 ["bR", "  ", "  ", "  ", "bK", "  ", "  ", "bR"],
-                ["  ", "  ", "  ", "  ", "  ", "  ", "  ", "  "],
+                ["  ", "  ", "  ", "  ", "wN", "  ", "  ", "  "],
                 ["  ", "  ", "  ", "  ", "  ", "  ", "  ", "  "],
                 ["  ", "  ", "  ", "  ", "  ", "  ", "  ", "  "],
                 ["  ", "  ", "  ", "  ", "  ", "  ", "  ", "  "],
@@ -101,35 +103,26 @@ def init_test(key):
                 ["  ", "  ", "bP", "  ", "bP", "  ", "  ", "  "],
                 ["  ", "  ", "  ", "  ", "  ", "  ", "  ", "  "],
                 ["  ", "  ", "  ", "wP", "  ", "  ", "  ", "  "],
-                ["wK", "  ", "  ", "  ", "  ", "  ", "  ", "  "],
+                ["wK", "  ", "  ", "wP", "  ", "  ", "  ", "  "],
             ],
         }
         game_info[0] = plats[key]
     except: pass
     return game_info
 
-"""
-For heuristic
-    P = 100
-    N = 320
-    B = 330
-    R = 500
-    Q = 900
-    K = 20000
-"""
-def get_piece_value(p):
-    if p == "P":
-        return 100
-    elif p == "R":
-        return 500
-    elif p == "N":
-        return 320
-    elif p == "B":
-        return 330
-    elif p == "Q":
-        return 900
-    elif p == "K":
-        return 20000
+def get_piece_value(piece):
+    if piece[-1] == "P":
+        return 1
+    elif piece[-1] == "N":
+        return 3.2
+    elif piece[-1] == "B":
+        return 3.33
+    elif piece[-1] == "R":
+        return 5.1
+    elif piece[-1] == "Q":
+        return 8.8
+    elif piece[-1] == "K":
+        return INFINITY
 
 def get_valid_moves(game_info):
     if game_info[2] is None:
@@ -148,15 +141,15 @@ def get_valid_moves(game_info):
                         res += get_valid_moves_of_piece(game_info, board[i][j], i, j)
 
         for cv in res:
-            jeu0_tmp = [game_info[0][i][:] for i in range(len(game_info[0]))]
-            jeu4_tmp = game_info[4][:] ; jeu5_tmp0 = game_info[5][0][:] ; jeu5_tmp1 = game_info[5][1][:]
-            game.play_move(game_info, cv)
+            game0_tmp = [game_info[0][i][:] for i in range(len(game_info[0]))]
+            game4_tmp = game_info[4][:] ; game5_tmp0 = game_info[5][0][:] ; game5_tmp1 = game_info[5][1][:] ; game6_tmp = game_info[6].copy()
+            play_move(game_info, cv)
             if not is_checked(game_info, game_info[1]%2+1):
                 filtered_res.append(cv)
-            game_info[0] = jeu0_tmp ; game_info[1] = game_info[1]%2 + 1 ; game_info[3].pop()
-            game_info[4] = jeu4_tmp ; game_info[5][0] = jeu5_tmp0 ; game_info[5][1] = jeu5_tmp1
+            game_info[0] = game0_tmp ; game_info[1] = game_info[1]%2 + 1 ; game_info[3].pop()
+            game_info[4] = game4_tmp ; game_info[5][0] = game5_tmp0 ; game_info[5][1] = game5_tmp1 ; game_info[6] = game6_tmp
 
-        game_info[2] = filtered_res
+        game_info[2] = list(set(filtered_res))
 
     return game_info[2]
 
@@ -169,27 +162,27 @@ def get_valid_moves_of_piece(game_info, piece, i, j):
     if piece[1] == "P":
         # EN PASSANT
         if game_info[3]:
-            row, col, d_row, _ = game_info[3][-1]
-            if abs(d_row - row) == 2:
+            last_row, last_col, last_d_row, last_d_col = game_info[3][-1]
+            if is_en_passant(game_info):
                 if piece[0] == "w":
-                    if col + 1 < 8 and board[d_row][col+1] == "wP": res.append((d_row, col+1, d_row-1, col))
-                    if col - 1 >= 0 and board[d_row][col-1] == "wP": res.append((d_row, col-1, d_row-1, col))
+                    if last_col + 1 < 8 and board[last_d_row][last_col+1] == "wP": res.append((last_d_row, last_col+1, last_d_row-1, last_col))
+                    if last_col - 1 >= 0 and board[last_d_row][last_col-1] == "wP": res.append((last_d_row, last_col-1, last_d_row-1, last_col))
                 else:
-                    if col + 1 < 8 and board[d_row][col+1] == "bP": res.append((d_row, col+1, d_row+1, col))
-                    if col - 1 >= 0 and board[d_row][col-1] == "bP": res.append((d_row, col-1, d_row+1, col))
+                    if last_col + 1 < 8 and board[last_d_row][last_col+1] == "bP": res.append((last_d_row, last_col+1, last_d_row+1, last_col))
+                    if last_col - 1 >= 0 and board[last_d_row][last_col-1] == "bP": res.append((last_d_row, last_col-1, last_d_row+1, last_col))
 
         if piece[0] == "w":
             if i-1 >= 0 and board[i-1][j] == "  ":
                 res.append((i, j, i-1, j))
                 if i == 6 and board[i-2][j] == "  ": res.append((i, j, i-2, j))
-            if j+1 < 8 and board[i-1][j+1][0] == "b": res.append((i, j, i-1, j+1))
-            if j-1 >= 0 and board[i-1][j-1][0] == "b": res.append((i, j, i-1, j-1))
+            if j+1 < 8 and i-1 >= 0 and board[i-1][j+1][0] == "b": res.append((i, j, i-1, j+1))
+            if j-1 >= 0 and i-1 >= 0 and board[i-1][j-1][0] == "b": res.append((i, j, i-1, j-1))
         else:
             if i+1 < 8 and board[i+1][j] == "  ":
                 res.append((i, j, i+1, j))
                 if i == 1 and board[i+2][j] == "  ": res.append((i, j, i+2, j))
-            if j+1 < 8 and board[i+1][j+1][0] == "w": res.append((i, j, i+1, j+1))
-            if j-1 >= 0 and board[i+1][j-1][0] == "w": res.append((i, j, i+1, j-1))
+            if j+1 < 8 and i+1 < 8 and board[i+1][j+1][0] == "w": res.append((i, j, i+1, j+1))
+            if j-1 >= 0 and i+1 < 8 and board[i+1][j-1][0] == "w": res.append((i, j, i+1, j-1))
 
     # Rook
     elif piece[1] == "R":
@@ -223,7 +216,7 @@ def get_valid_moves_of_piece(game_info, piece, i, j):
         if i-2 >= 0 and j+1 < 8 and board[i-2][j+1][0] != piece[0]: res.append((i, j, i-2, j+1))
         if i-2 >= 0 and j-1 >= 0 and board[i-2][j-1][0] != piece[0]: res.append((i, j, i-2, j-1))
         if i+2 < 8 and j+1 < 8 and board[i+2][j+1][0] != piece[0]: res.append((i, j, i+2, j+1))
-        if i+2 < 8 and j-1 < 8 and board[i+2][j-1][0] != piece[0]: res.append((i, j, i+2, j-1))
+        if i+2 < 8 and j-1 >= 0 and board[i+2][j-1][0] != piece[0]: res.append((i, j, i+2, j-1))
         if j-2 >= 0 and i+1 < 8 and board[i+1][j-2][0] != piece[0]: res.append((i, j, i+1, j-2))
         if j-2 >= 0 and i-1 >= 0 and board[i-1][j-2][0] != piece[0]: res.append((i, j, i-1, j-2))
         if j+2 < 8 and i+1 < 8 and board[i+1][j+2][0] != piece[0]: res.append((i, j, i+1, j+2))
@@ -280,7 +273,6 @@ def get_valid_moves_of_piece(game_info, piece, i, j):
         if i+1 < 8 and j+1 < 8 and board[i+1][j+1][0] != piece[0]: res.append((i, j, i+1, j+1))
         if i+1 < 8 and j-1 >= 0 and board[i+1][j-1][0] != piece[0]: res.append((i, j, i+1, j-1))
         # CASTLING
-        N = 8 - 1
         if piece[0] == "b" and any(game_info[5][1]) and (i, j) == (0, 4):
             if board[i][j+1] == "  " and board[i][j+2] == "  " and board[0][N] == "bR" and game_info[5][1][1]: res.append((i, j, i, j+2))
             if board[i][j-1] == "  " and board[i][j-2] == "  " and board[i][j-3] == "  " and board[0][0] == "bR" and game_info[5][1][0]: res.append((i, j, i, j-2))
@@ -290,20 +282,30 @@ def get_valid_moves_of_piece(game_info, piece, i, j):
 
     return res
 
+def is_en_passant(game_info):
+    if not game_info[3]: return False
+    last_row, last_col, last_d_row, last_d_col = game_info[3][-1]
+    return last_col == last_d_col and game_info[0][last_d_row][last_d_col][1].lower() == "p" and last_row in [1, 6] and abs(last_d_row - last_row) == 2
+
 def is_game_over(game_info):
     cv = get_valid_moves(game_info)
     # CHECKMATE
     if is_checked(game_info) and not cv:
         if game_info[1] == 1:
-            game_info[4][1] = INFINITY
+            game_info[4].append((game_info[4][-1][0], INFINITY))
         else:
-            game_info[4][0] = INFINITY
+            game_info[4].append((INFINITY, game_info[4][-1][1]))
         return True
     # PAT
     elif not cv:
-        game_info[4][0] = 0
-        game_info[4][1] = 0
         return True
+    # No more king
+    if not get_king_pos(game_info, "b") or not get_king_pos(game_info, "w"):
+        return True
+    # 50/75-move rule
+    if len(game_info[3]) >= 50:
+        last_scores = game_info[4][-50:]
+        return last_scores.count(last_scores[0]) == len(last_scores)
 
     return False
 
@@ -341,68 +343,75 @@ def get_king_pos(game_info, color):
             for j in range(8):
                 if board[i][j] == "wK":
                     return (i, j)
+    return None
 
 def play_move(game_info, move):
     board = game_info[0]
-    row = move[0]
-    col = move[1]
-    d_row = move[2]
-    d_col = move[3]
+    row, col, d_row, d_col = move
 
     piece = board[row][col]
     board[row][col] = "  "
+    new_score = game_info[4][-1]
+
     if board[d_row][d_col][0] != " " and board[d_row][d_col][0] != piece[0]:
-        if piece[0] == "w":
-            game_info[4][0] += get_piece_value(board[d_row][d_col][1]) // 100
-            game_info[4][2] += get_piece_value(board[d_row][d_col][1])
-        else:
-            game_info[4][1] += get_piece_value(board[d_row][d_col][1]) // 100
-            game_info[4][3] += get_piece_value(board[d_row][d_col][1])
+        new_score = get_new_score(game_info, board[d_row][d_col])
+
+    if piece[1] == "P":
+        # EN PASSANT
+        if is_en_passant(game_info):
+            if piece == "wP" and row == 3 and board[row][d_col] == "bP":
+                new_score = get_new_score(game_info, "bP")
+                board[row][d_col] = "  "
+            elif piece == "bP" and row == 4 and board[row][d_col] == "wP":
+                new_score = get_new_score(game_info, "wP")
+                board[row][d_col] = "  "
+
+        # PROMOTION
+        if piece == "wP" and row == 1 and d_row == 0:
+            piece = "wQ" #TODO: piece choice
+            game_info[4].append((game_info[4][-1][0] + get_piece_value(piece), game_info[4][-1][1]))
+            game_info[6].add(len(game_info[3]))
+        elif piece == "bP" and row == 6 and d_row == 7:
+            piece = "bQ" #TODO: piece choice
+            game_info[4].append((game_info[4][-1][0], game_info[4][-1][1] + get_piece_value(piece)))
+            game_info[6].add(len(game_info[3]))
+
+    elif piece[1] in ["K", "R"]:
+        # CASTLING
+        if any(game_info[5][0]):
+            if piece == "wR" and (row, col) == (N, 0): game_info[5][0][0] = False
+            elif piece == "wR" and (row, col) == (N, N): game_info[5][0][1] = False
+            elif piece == "wK":
+                if game_info[5][0][1] and d_col == col+2:
+                    board[N][N] = "  "
+                    board[N][col+1] = "wR"
+                elif game_info[5][0][0] and d_col == col-2:
+                    board[N][0] = "  "
+                    board[N][col-1] = "wR"
+                game_info[5][0] = [False, False]
+        if any(game_info[5][1]):
+            if piece == "bR" and (row, col) == (0, 0): game_info[5][1][0] = False
+            elif piece == "bR" and (row, col) == (0, N): game_info[5][1][1] = False
+            elif piece == "bK":
+                if game_info[5][1][1] and d_col == col+2:
+                    board[0][N] = "  "
+                    board[0][col+1] = "bR"
+                elif game_info[5][1][0] and d_col == col-2:
+                    board[0][0] = "  "
+                    board[0][col-1] = "bR"
+                game_info[5][1] = [False, False]
+
     board[d_row][d_col] = piece
-
-    # PROMOTION
-    if game_info[1] == 1:
-        for j in range(8):
-            if board[0][j][1] == "P":
-                board[0][j] = "wQ"
-    else:
-        for j in range(8):
-            if board[8-1][j][1] == "P":
-                board[8-1][j] = "bQ"
-
-    # CASTLING
-    N = 8 - 1
-    if any(game_info[5][0]):
-        if piece == "wR" and (row, col) == (N, 0): game_info[5][0][0] = False
-        elif piece == "wR" and (row, col) == (N, N): game_info[5][0][1] = False
-        elif piece == "wK":
-            if game_info[5][0][1] and d_col == col+2:
-                board[N][N] = "  "
-                board[N][col+1] = "wR"
-            elif game_info[5][0][0] and d_col == col-2:
-                board[N][0] = "  "
-                board[N][col-1] = "wR"
-            game_info[5][0] = [False, False]
-    if any(game_info[5][1]):
-        if piece == "bR" and (row, col) == (0, 0): game_info[5][1][0] = False
-        elif piece == "bR" and (row, col) == (0, N): game_info[5][1][1] = False
-        elif piece == "bK":
-            if game_info[5][1][1] and d_col == col+2:
-                board[0][N] = "  "
-                board[0][col+1] = "bR"
-            elif game_info[5][1][0] and d_col == col-2:
-                board[0][0] = "  "
-                board[0][col-1] = "bR"
-            game_info[5][1] = [False, False]
-
-    # EN PASSANT
-    if piece == "wP" and row == 3 and board[row][d_col] == "bP": board[row][d_col] = "  "
-    elif piece == "bP" and row == 4 and board[row][d_col] == "wP": board[row][d_col] = "  "
-
-
     game.change_player(game_info)
     game_info[2] = None
     game_info[3].append(move)
+    game_info[4].append(new_score)
+
+def get_new_score(game_info, taken_piece):
+    if taken_piece[0] == "b":
+        return (game_info[4][-1][0] + get_piece_value(taken_piece), game_info[4][-1][1])
+    else:
+        return (game_info[4][-1][0], game_info[4][-1][1] + get_piece_value(taken_piece))
 
 def print_board(game_info):
     board = game_info[0]
@@ -410,32 +419,32 @@ def print_board(game_info):
     for i in range(8):
         if i == 0:
             print("%5s|" %(""), end="")
-        print("%3s  |" %(i), end="")
+        print("%3s |" %(i), end="")
 
-    print("\n", "-"*6*9)
+    print("\n", "-"*5*9)
 
     for i in range(8):
         print("%3s  |" %(i), end="")
         for j in range(8):
             print(" %s |" %(board[i][j]), end="")
 
-        print("\n", "-"*6*9)
+        print("\n", "-"*5*9)
 
 def print_game(game_info):
     """ game_info -> void
         Affiche l"etat du game_info de la maniere suivante :
-                Coup joue = <dernier move>
+                Last move = <dernier move>
                 Scores = <score 1>, <score 2>
                 Board : ...
 
-                Joueur <player>, a vous de jouer
+                Player <player>, it's your turn
         Hypothese : le contenu de chaque case ne depasse pas 5 caracteres
     """
     print("Last played move =", "None" if not game_info[3] else game_info[3][-1])
-    print(f"Scores = {game_info[4]}")
-    print("Plateau:")
+    print(f"Scores = {game_info[4][-1]}")
+    print("Board:")
     print_board(game_info)
-    print(f"Joueur {game_info[1]}, a vous de jouer\n")
+    print(f"Player {game_info[1]}, it's your turn\n")
 
 def draw_board(game_info):
     ROWS = 8
@@ -461,22 +470,25 @@ def draw_board(game_info):
                 key = "w" + piece[1]
                 WIN.blit(IMAGES[key], (j*SIZE,i*SIZE))
 
-    if is_checked(game_info):
-        i, j = get_king_pos(game_info, "w") if game_info[1] == 1 else get_king_pos(game_info, "b")
+    is_white_checked = is_checked(game_info, 1)
+    is_black_checked = is_checked(game_info, 2)
+    if is_white_checked or is_black_checked:
+        i, j = get_king_pos(game_info, "w") if is_white_checked else get_king_pos(game_info, "b")
         pygame.draw.circle(WIN, (255,0,0), (j*SIZE+SIZE//2, i*SIZE+SIZE//2), SIZE//2-2)
-        if game_info[1] == 1:
+        if is_white_checked:
             WIN.blit(IMAGES["wK"], (j*SIZE,i*SIZE))
         else:
             WIN.blit(IMAGES["bK"], (j*SIZE,i*SIZE))
 
     if is_game_over(game_info):
-        text_str = "WHITE WINS" if game_info[4][0] == INFINITY else "BLACK WINS" if game_info[4][1] == INFINITY else "PAT"
+        display_text = "WHITE WINS" if game_info[4][-1][0] == INFINITY else "BLACK WINS" if game_info[4][-1][1] == INFINITY else "DRAW"
         color = (255,0,0)
     else:
-        text_str = "WHITE'S TURN" if game_info[1] == 1 else "BLACK'S TURN"
+        display_text = "WHITE'S TURN" if game_info[1] == 1 else "BLACK'S TURN"
         color = (255,255,255)
-    text = FONT.render(text_str, False, color)
-    score = FONT.render(f"{game_info[4][:2]}", False, (255,255,255))
+    display_score = list(map(lambda x: round(x, 2), game_info[4][-1]))
+    text = FONT.render(display_text, False, color)
+    score = FONT.render(f"{display_score}", False, (255,255,255))
     players = pygame.font.SysFont("couriernew", 22).render(f"{game.player1.__name__.upper().split('.')[-1].split('_')[-1].split('.')[-1].split('_')[-1]} VS {game.player2.__name__.upper().split('.')[-1].split('_')[-1].split('.')[-1].split('_')[-1]}", False, (255,255,255))
     WIN.blit(text, (WIDTH//2 - text.get_width()//2, HEIGHT-OFFSET+5))
     WIN.blit(score, (WIDTH//2 - score.get_width()//2, HEIGHT-OFFSET+35))

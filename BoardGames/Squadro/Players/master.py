@@ -32,7 +32,7 @@ def get_move(game_info):
 
 def decision(game_info, alpha, beta):
     vmax = -INFINITY
-    bestCoup = None
+    bestMove = None
 
     for move in game.get_valid_moves(game_info):
         global NUM_NODES
@@ -43,12 +43,12 @@ def decision(game_info, alpha, beta):
         v = minimax(j, PLIES-1, False, alpha, beta)
         if v > vmax:
             vmax = v
-            bestCoup = move
+            bestMove = move
     if game.GUI:
         for event in pygame.event.get():
             if event.type == pygame.QUIT: return None
 
-    return bestCoup
+    return bestMove
 
 def minimax(game_info, plies, maximizingPlayer, alpha, beta):	####### GOAL STATE EVALUATION #######
     if game.is_game_over(game_info):
@@ -95,12 +95,12 @@ def minimax(game_info, plies, maximizingPlayer, alpha, beta):	####### GOAL STATE
 
 ############################################################################
 
-def getInputs(game_info):
+def get_inputs(game_info):
     return [distance(game_info, AI_PLAYER), distance(game_info, OPPONENT), score(game_info, AI_PLAYER), score(game_info, OPPONENT)]
 
 def heuristic(game_info):
     """ Linear combination of weights and elementary heuristics """
-    inputs = getInputs(game_info)
+    inputs = get_inputs(game_info)
     assert(len(inputs) == len(WEIGHTS))
     return sum(h * w for h, w in zip(inputs, WEIGHTS))
 
@@ -139,5 +139,5 @@ def distance(game_info, player):
     return s if player == AI_PLAYER else -s
 
 def score(game_info, player):
-    cpt = 100 * game.get_score(game_info, player)
+    cpt = 100 * game.get_score_player(game_info, player)
     return cpt if player == AI_PLAYER else -cpt

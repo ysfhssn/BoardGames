@@ -28,21 +28,21 @@ def get_move(game_info):
 
     return decision(game_info, -INFINITY, INFINITY)
 
-def order_coups(game_info, coupsPossibles, reverse):
-    ranked_coups = []
-    for move in coupsPossibles:
+def order_moves(game_info, movesPossibles, reverse):
+    ranked_moves = []
+    for move in movesPossibles:
         game_copy = game.get_game_copy(game_info)
         game.play_move(game_copy, move)
-        d_score = game.get_score(game_copy, AI_PLAYER) - game.get_score(game_copy, OPPONENT)
-        ranked_coups.append((d_score, move))
-    ranked_coups.sort(reverse=reverse)
-    return [rc[1] for rc in ranked_coups]
+        d_score = game.get_score_player(game_copy, AI_PLAYER) - game.get_score_player(game_copy, OPPONENT)
+        ranked_moves.append((d_score, move))
+    ranked_moves.sort(reverse=reverse)
+    return [rc[1] for rc in ranked_moves]
 
 def decision(game_info, alpha, beta):
     vmax = -INFINITY
-    bestCoup = None
+    bestMove = None
 
-    for move in order_coups(game_info, game.get_valid_moves(game_info), True):
+    for move in order_moves(game_info, game.get_valid_moves(game_info), True):
         global NUM_NODES
         NUM_NODES += 1
         j = game.get_game_copy(game_info)
@@ -51,11 +51,11 @@ def decision(game_info, alpha, beta):
         v = minimax(j, PLIES-1, False, alpha, beta)
         if v > vmax:
             vmax = v
-            bestCoup = move
+            bestMove = move
         if v > alpha:
             alpha = v
 
-    return bestCoup
+    return bestMove
 
 def minimax(game_info, plies, maximizingPlayer, alpha, beta):    ####### GOAL STATE EVALUATION #######
     if game.is_game_over(game_info):
@@ -102,18 +102,18 @@ def minimax(game_info, plies, maximizingPlayer, alpha, beta):    ####### GOAL ST
 
 ############################################################################
 
-def getInputs(game_info):
+def get_inputs(game_info):
     return [d_scores(game_info), d_grains(game_info), ai_wk_pits(game_info), op_wk_pits(game_info)]
 
 def heuristic(game_info):
     """ Linear combination of weights and elementary heuristics """
-    inputs = getInputs(game_info)
+    inputs = get_inputs(game_info)
     assert(len(inputs) == len(WEIGHTS))
     return sum(h * w for h, w in zip(inputs, WEIGHTS))
 
 
 def d_scores(game_info):
-    return game.get_score(game_info, AI_PLAYER) - game.get_score(game_info, OPPONENT)
+    return game.get_score_player(game_info, AI_PLAYER) - game.get_score_player(game_info, OPPONENT)
 
 def d_grains(game_info):
     return sum(game_info[0][AI_PLAYER-1]) - sum(game_info[0][OPPONENT-1])

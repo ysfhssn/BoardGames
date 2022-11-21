@@ -7,17 +7,6 @@ parent = os.path.dirname(dirname)
 sys.path.append(parent)
 import game
 
-""""
-	NOMENCLATURE A RESPECTER
-	move = (int, int)
-	game_info = List[...] :
-		0: board      	List[List[int]]
-		1: player       int (1 ou 2)
-		2: valid moves	List[(int, int)]
-		3: played moves List[(int, int)]
-		4: scores       List[int, int]
-"""
-
 if game.GUI:
     import pygame
     pygame.init()
@@ -172,18 +161,18 @@ def print_board(game_info):
 def print_game(game_info):
 	""" game_info -> void
         Affiche l"etat du game_info de la maniere suivante :
-                Coup joue = <dernier move>
+                Last move = <dernier move>
                 Scores = <score 1>, <score 2>
                 Board : ...
 
-                Joueur <player>, a vous de jouer
+                Player <player>, it's your turn
         Hypothese : le contenu de chaque case ne depasse pas 5 caracteres
     """
 	print("Last played move =", "None" if not game_info[3] else game_info[3][-1])
 	print(f"Scores = {game_info[4]}")
-	print("Plateau:")
+	print("Board:")
 	print_board(game_info)
-	print(f"Joueur {game_info[1]}, a vous de jouer\n")
+	print(f"Player {game_info[1]}, it's your turn\n")
 
 def draw_board(game_info):
     ROWS = 7

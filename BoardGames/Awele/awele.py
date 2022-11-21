@@ -7,7 +7,7 @@ parent = os.path.dirname(dirname)
 sys.path.append(parent)
 import game
 
-NB_COUPS_MAX = 100
+NUM_MAX_MOVES = 100
 
 def init():
     """ void -> game_info
@@ -59,7 +59,7 @@ def is_game_over(game_info):
         game_info[4][0] += sum(game_info[0][0])
         game_info[4][1] += sum(game_info[0][1])
         return True
-    if len(game.get_played_moves(game_info)) >= NB_COUPS_MAX:
+    if len(game.get_played_moves(game_info)) >= NUM_MAX_MOVES:
         return True
 
     return False
@@ -145,6 +145,6 @@ def print_board(game_info):
 def print_game(game_info):
 	print("Last played move =", "None" if not game_info[3] else game_info[3][-1])
 	print(f"Scores = {game_info[4]}")
-	print("Plateau:")
+	print("Board:")
 	print_board(game_info)
-	print(f"Joueur {game_info[1]}, a vous de jouer\n")
+	print(f"Player {game_info[1]}, it's your turn\n")

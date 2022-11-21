@@ -8,13 +8,13 @@ def get_move(game_info):
     l = None
     c = None
     if not game.GUI:
-        print("Coups valides: ", game.get_valid_moves(game_info))
-        l = int(input("Votre row: "))
-        c = int(input("Votre col: "))
+        print("Valid moves: ", game.get_valid_moves(game_info))
+        l = int(input("Row: "))
+        c = int(input("Col: "))
         while (l, c) not in game.get_valid_moves(game_info):
-            print("Coup invalide !")
-            l = int(input("Votre row: "))
-            c = int(input("Votre col: "))
+            print("Invalid move !")
+            l = int(input("Row: "))
+            c = int(input("Col: "))
         return (l, c)
 
     else:

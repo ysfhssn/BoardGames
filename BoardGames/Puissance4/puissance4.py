@@ -135,18 +135,18 @@ def print_board(game_info):
 def print_game(game_info):
 	""" game_info -> void
         Affiche l'etat du game_info de la maniere suivante :
-                Coup joue = <dernier move>
+                Last move = <dernier move>
                 Scores = <score 1>, <score 2>
                 Board : ...
 
-                Joueur <player>, a vous de jouer
+                Player <player>, it's your turn
         Hypothese : le contenu de chaque case ne depasse pas 5 caracteres
     """
 	print("Last played move =", "None" if not game_info[3] else game_info[3][-1])
 	print(f"Scores = {game_info[4]}")
-	print("Plateau:")
+	print("Board:")
 	print_board(game_info)
-	print(f"Joueur {game_info[1]}, a vous de jouer\n")
+	print(f"Player {game_info[1]}, it's your turn\n")
 
 def draw_board(game_info, update=True):
     board = game_info[0]

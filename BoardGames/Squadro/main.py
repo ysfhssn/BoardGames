@@ -1,23 +1,26 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import sys
 import os
+dirname = os.path.dirname(__file__)
+parent = os.path.dirname(dirname)
+sys.path.append(parent)
 import game
 if game.GUI: import pygame
 from Squadro.Players import master, mcts, minimax_ab, random_move
 import time
 JOUEURS_TREE = [minimax_ab, master]
 
-START = None
 def main():
     from Squadro import squadro
     game.game = squadro
-    global START
     N = NUM_ROUNDS = 1 #int(input("Number of rounds: "))
-    START = time.time()
     NUM_ROUNDS_WON_P1 = 0
     NUM_ROUNDS_WON_P2 = 0
     NUM_ROUNDS_DRAWS = 0
+    NUM_FIRST_RANDOM_MOVES = 0
 
+    game_start = time.time()
     i = 0
     while i < NUM_ROUNDS:
         print(f"\n\n########## DEBUT PARTIE {i+1} ##########")
@@ -27,14 +30,14 @@ def main():
             pygame.display.set_mode((squadro.WIDTH, squadro.HEIGHT))
             squadro.draw_board(game_info)
 
-        start = time.time()
+        round_start = time.time()
         while not game.is_game_over(game_info):
             if game.GUI:
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT: return
 
             move_start = time.time()
-            if len(game.get_played_moves(game_info)) < 0: move = random_move.get_move(game_info)
+            if len(game.get_played_moves(game_info)) < NUM_FIRST_RANDOM_MOVES: move = random_move.get_move(game_info)
             else: move = game.get_move(game_info)
             move_end = time.time()
             move_time = move_end - move_start
@@ -57,8 +60,8 @@ def main():
             #game.print_game(game_info)
             if game.GUI: squadro.draw_board(game_info)
             #game.change_player(game_info) deja effectue dans play_move
-        end = time.time()
-        round_time = end - start
+        round_end = time.time()
+        round_time = round_end - round_start
 
         winner = game.get_winner(game_info)
 
@@ -70,7 +73,7 @@ def main():
             print(f"NUM_NODES_P2 ROUND {i+1}: {game.player2.NUM_NODES}")
             game.player2.NUM_NODES = 0
         print(f"NUM_MOVES: {len(game.get_played_moves(game_info))}")
-        print(f"FINAL SCORE: {game.get_scores(game_info)}")
+        print(f"FINAL SCORE: {game.get_score(game_info)}")
 
         if winner == 1:
             print(f"WINNER ROUND {i+1}: Player {winner}")
@@ -91,27 +94,31 @@ def main():
             squadro.WIN.blit(pa, pa_rect)
             pygame.display.update()
             while True:
-                close = False
                 for event in pygame.event.get():
-                    if event.type == pygame.QUIT: close = True
-                if close: break
+                    if event.type == pygame.QUIT: return
 
                 x, y = pygame.mouse.get_pos()
-                if pa_rect.collidepoint((x,y)):
+                if pa_rect.collidepoint((x, y)):
+                    clicked = False
                     if pygame.mouse.get_pressed()[0]:
+                        clicked = True
+                    if clicked:
+                        clicked = False
                         NUM_ROUNDS += N
-                        time.sleep(0.1)
                         break
+    game_end = time.time()
+    game_time = game_end - game_start
 
 
     print("\n\n###########################################")
     print(f"{game.player1.__name__.upper().split('.')[-1].split('_')[-1]} VS {game.player2.__name__.upper().split('.')[-1].split('_')[-1]}")
-    print("\nNUM_ROUNDS:          ", NUM_ROUNDS)
+    print("\nNUM_ROUNDS:       ", NUM_ROUNDS)
     print("NUM_ROUNDS_WON_P1:", NUM_ROUNDS_WON_P1)
     print("NUM_ROUNDS_WON_P2:", NUM_ROUNDS_WON_P2)
     print("NUM_ROUNDS_DRAWS: ", NUM_ROUNDS_DRAWS)
     print("###########################################")
 
+    print(f"\n\nTotal time: {game_time:.5f} seconds")
 
 
 
@@ -121,6 +128,3 @@ if __name__ == "__main__":
     game.player2 =  mcts
     #######################
     main()
-    END = time.time()
-    round_time = END - START
-    print(f"\n\nTotal time: {round_time:.5f} seconds")

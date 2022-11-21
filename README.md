@@ -7,10 +7,10 @@
 python --version
     Python 3.9.6
 
-pip install pygame
-pip install tqdm
-pip install stockfish
-pip install auto-py-to-exe
+pip install -r requirements.txt
+
+cd BoardGames/
+python game.py
 ````
 
 ### Modules

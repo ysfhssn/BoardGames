@@ -49,23 +49,23 @@ def main_loop():
         print(f"NUM_NODES_P2 ROUND : {game.player2.NUM_NODES}")
         game.player2.NUM_NODES = 0
     print(f"NUM_MOVES: {len(game.get_played_moves(game_info))}")
-    print(f"FINAL SCORE: {game.get_scores(game_info)}")
+    print(f"FINAL SCORE: {game.get_score(game_info)}")
 
     if winner == 1:
-        print(f"GAGNANT PARTIE : Joueur {winner}")
+        print(f"Winner: Player {winner}")
         NUM_ROUNDS_WON_P1.value += 1
     elif winner == 2:
-        print(f"GAGNANT PARTIE : Joueur {winner}")
+        print(f"Winner: Player {winner}")
         NUM_ROUNDS_WON_P2.value += 1
     else:
-        print("GAGNANT PARTIE : Egalite")
+        print("Winner: Egalite")
         NUM_ROUNDS_DRAWS.value += 1
 
 def main():
-    NUM_ROUNDS = int(input("Nombre de parties: "))
+    NUM_ROUNDS = int(input("NUM_ROUNDS: "))
     processes = []
     start = time.time()
-    for i in range(NUM_ROUNDS):
+    for _ in range(NUM_ROUNDS):
         p = mp.Process(target=main_loop)
         processes.append(p)
         p.start()
@@ -73,12 +73,12 @@ def main():
     for p in processes:
         p.join()
     end = time.time()
-    round_time = end - start
-    print(f"\nTotal time : {round_time:.5f} seconds")
+    game_time = end - start
+    print(f"\nTotal time : {game_time:.5f} seconds")
 
     print("\n\n###########################################")
     print(f"{game.player1.__name__.upper().split('.')[-1].split('_')[-1]} VS {game.player2.__name__.upper().split('.')[-1].split('_')[-1]}")
-    print("\nNUM_ROUNDS:          ", NUM_ROUNDS)
+    print("\nNUM_ROUNDS:       ", NUM_ROUNDS)
     print("NUM_ROUNDS_WON_P1:", NUM_ROUNDS_WON_P1.value)
     print("NUM_ROUNDS_WON_P2:", NUM_ROUNDS_WON_P2.value)
     print("NUM_ROUNDS_DRAWS: ", NUM_ROUNDS_DRAWS.value)

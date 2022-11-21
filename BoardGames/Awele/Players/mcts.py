@@ -2,9 +2,10 @@ import game
 if game.GUI: import pygame
 import math
 import random
+import time
 
 #####################
-NB_ITERATIONS = 1000
+NB_SECONDS = 1.
 NB_ROLLOUTS = 1
 #####################
 
@@ -15,8 +16,7 @@ SQRT2 = math.sqrt(2)
 
 
 
-c = SQRT2
-def UCB1(Si):
+def UCB1(Si, c=SQRT2):
     if Si.ni == 0 or Si.parent.ni is None: return INFINITY
     return Si.wi/Si.ni + c*math.sqrt(math.log(Si.parent.ni/Si.ni))
 
@@ -47,15 +47,16 @@ def get_move(game_info):
     OPPONENT = AI_PLAYER%2 + 1
 
     # Init
-    ROOT = Node(game_info)
+    root = Node(game_info)
+    move_start = time.time()
     for move in game.get_valid_moves(game_info):
         j = game.get_game_copy(game_info)
         game.play_move(j, move)
-        ROOT.add_child(Node(j))
+        root.add_child(Node(j))
 
     # Selection - Expansion - Rollout - Backpropagation
-    for i in range(NB_ITERATIONS):
-        leaf = select(ROOT)
+    while time.time() - move_start < NB_SECONDS:
+        leaf = select(root)
 
         if game.is_game_over(leaf.game_info):
             backpropagate(leaf, NB_ROLLOUTS) if game.get_winner(leaf.game_info) == AI_PLAYER else backpropagate(leaf, 0)
@@ -64,8 +65,8 @@ def get_move(game_info):
         if leaf.ni == 0:
             score = rollout(leaf)
         else:
-            children = expand(leaf)
-            score = rollout(children[0])
+            leaf = expand(leaf)[0]
+            score = rollout(leaf)
 
         if score is None: return None # pygame quit
 
@@ -73,12 +74,12 @@ def get_move(game_info):
 
     # Best move
     vmax = -INFINITY
-    bestCoup = None
-    for c in ROOT.children:
+    bestMove = None
+    for c in root.children:
         if c.ni > vmax:
             vmax = c.ni
-            bestCoup = c.game_info[3][-1]
-    return bestCoup
+            bestMove = c.game_info[3][-1]
+    return bestMove
 
 def select(root):
     node = root

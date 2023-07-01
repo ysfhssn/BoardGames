@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import game
+from Chess.chess import WIN, SIZE, IMAGES, get_valid_moves_of_piece, draw_board, draw_timers
 if game.GUI: import pygame
 
 def get_move(game_info):
@@ -27,14 +28,8 @@ def get_move(game_info):
         return (i, j, di, dj)
 
     else:
-        WIN = game.game.WIN
-        SIZE = game.game.SIZE
-        IMAGES = game.game.IMAGES
-        draw_board = game.game.draw_board
-        get_valid_moves_of_piece = game.game.get_valid_moves_of_piece
-
         snd_loop = False
-        while not game.game.is_game_over(game_info):
+        while True:
             draw_board(game_info)
             for event in pygame.event.get():
                 if event.type == pygame.QUIT: return None
@@ -66,6 +61,9 @@ def get_move(game_info):
                             pygame.display.update()
 
                     while snd_loop:
+                        draw_timers(game_info)
+                        pygame.display.update()
+
                         for event in pygame.event.get():
                             if event.type == pygame.QUIT: return None
                             x, y = pygame.mouse.get_pos()

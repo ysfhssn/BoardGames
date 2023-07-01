@@ -35,16 +35,19 @@ def main():
         round_start = time.time()
         while not game.is_game_over(game_info):
             if game.GUI:
-                pygame.display.set_mode((chess.WIDTH, chess.HEIGHT))
                 for event in pygame.event.get():
-                    if event.type == pygame.QUIT: return
+                    if event.type == pygame.QUIT:
+                        chess.stop_event.set()
+                        return
 
             move_start = time.time()
             if len(game.get_played_moves(game_info)) < NUM_FIRST_RANDOM_MOVES: move = random_move.get_move(game_info)
             else: move = game.get_move(game_info)
             move_end = time.time()
             move_time = move_end - move_start
-            if move is None: return # human quit
+            if move is None:
+                chess.stop_event.set()
+                return # human quit
 
             print_move_stats(game_info, move_time)
 
@@ -81,7 +84,9 @@ def main():
             pygame.display.update()
             while True:
                 for event in pygame.event.get():
-                    if event.type == pygame.QUIT: return
+                    if event.type == pygame.QUIT:
+                        chess.stop_event.set()
+                        return
 
                 x, y = pygame.mouse.get_pos()
                 if pa_rect.collidepoint((x, y)):

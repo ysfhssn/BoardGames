@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import pygame
-import sys
 import os
 import Awele.players_selection, Chess.players_selection, Othello.players_selection, Puissance4.players_selection, Squadro.players_selection
 dirname = os.path.dirname(__file__)
@@ -32,7 +31,7 @@ def selection():
         WIN.fill((0,0,0))
 
         for event in pygame.event.get():
-            if event.type == pygame.QUIT: sys.exit(0)
+            if event.type == pygame.QUIT: return
 
         for button in buttons:
             if button.draw_button(WIN):

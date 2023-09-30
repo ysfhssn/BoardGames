@@ -76,7 +76,7 @@ def get_move(game_info):
     return player1.get_move(game_info) if player == 1 else player2.get_move(game_info)
 
 def play_move(game_info, move):
-    game.play_move(game_info, move)
+    return game.play_move(game_info, move)
 
 def print_game(game_info):
     game.print_game(game_info)

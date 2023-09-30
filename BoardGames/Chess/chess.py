@@ -73,14 +73,16 @@ def init():
     ]
     game_info = [board, 1, None, [], [(0,0)], [[True,True], [True,True]], set(), [0,0]]
     stop_event.clear()
-    Thread(target=update_timers, args=(game_info,)).start()
+    Thread(target=update_timers, args=(game_info,), daemon=True).start()
     return game_info
 
 def init_test(key):
     game_info = init()
+    from Chess.Players import human
+    game.player1 = human
+    game.player2 = human
     try:
         plats = {
-            # Test castling
             "CASTLING": [
                 ["bR", "  ", "  ", "  ", "bK", "  ", "  ", "bR"],
                 ["  ", "  ", "  ", "  ", "wN", "  ", "  ", "  "],
@@ -102,7 +104,6 @@ def init_test(key):
                 ["  ", "  ", "  ", "  ", "  ", "  ", "  ", "  "],
                 ["  ", "  ", "  ", "  ", "  ", "  ", "  ", "  "],
             ],
-            # Test en passant
             "EN PASSANT": [
                 ["  ", "  ", "  ", "  ", "  ", "  ", "  ", "  "],
                 ["bP", "  ", "bP", "  ", "  ", "  ", "bK", "bP"],
@@ -111,7 +112,17 @@ def init_test(key):
                 ["  ", "  ", "bP", "  ", "bP", "  ", "  ", "  "],
                 ["  ", "  ", "  ", "  ", "  ", "  ", "  ", "  "],
                 ["  ", "  ", "  ", "wP", "  ", "  ", "  ", "  "],
-                ["wK", "  ", "  ", "wP", "  ", "  ", "  ", "  "],
+                ["wK", "  ", "  ", "  ", "  ", "  ", "  ", "  "],
+            ],
+            "PROMOTION": [
+                ["  ", "  ", "  ", "  ", "  ", "  ", "  ", "  "],
+                ["wP", "wP", "wP", "wP", "wP", "wP", "wP", "wP"],
+                ["  ", "  ", "  ", "  ", "  ", "  ", "  ", "  "],
+                ["  ", "  ", "wK", "  ", "bK", "  ", "  ", "  "],
+                ["  ", "  ", "  ", "  ", "  ", "  ", "  ", "  "],
+                ["  ", "  ", "  ", "  ", "  ", "  ", "  ", "  "],
+                ["bP", "bP", "bP", "bP", "bP", "bP", "bP", "bP"],
+                ["  ", "  ", "  ", "  ", "  ", "  ", "  ", "  "],
             ],
         }
         game_info[0] = plats[key]
@@ -317,22 +328,27 @@ def get_valid_moves_of_piece(game_info, piece, i, j):
 def is_en_passant(game_info):
     if not game_info[3]: return False
     last_row, last_col, last_d_row, last_d_col = game_info[3][-1]
-    return last_col == last_d_col and game_info[0][last_d_row][last_d_col][1].lower() == "p" and last_row in [1, 6] and abs(last_d_row - last_row) == 2
+    return last_col == last_d_col and game_info[0][last_d_row][last_d_col][-1] == "P" and last_row in [1, 6] and abs(last_d_row - last_row) == 2
 
 def is_game_over(game_info):
     cv = get_valid_moves(game_info)
-    # CHECKMATE
-    if is_checked(game_info) and not cv:
+
+    def update_winner_score(game_info):
         if game_info[1] == 1:
             game_info[4].append((game_info[4][-1][0], INFINITY))
         else:
             game_info[4].append((INFINITY, game_info[4][-1][1]))
+
+    # CHECKMATE
+    if is_checked(game_info) and not cv:
+        update_winner_score(game_info)
         return True
     # PAT
     elif not cv:
         return True
     # No more king
     if not get_king_pos(game_info, "b") or not get_king_pos(game_info, "w"):
+        update_winner_score(game_info)
         return True
     # 50/75-move rule
     if len(game_info[3]) >= 50:
@@ -400,12 +416,14 @@ def play_move(game_info, move):
 
         # PROMOTION
         if piece == "wP" and row == 1 and d_row == 0:
-            piece = "wQ" #TODO: piece choice
-            game_info[4].append((game_info[4][-1][0] + get_piece_value(piece), game_info[4][-1][1]))
+            piece = promotion_choice(game_info)
+            if piece is None: return 'quit'
+            new_score = (game_info[4][-1][0] + get_piece_value(piece), game_info[4][-1][1])
             game_info[6].add(len(game_info[3]))
         elif piece == "bP" and row == 6 and d_row == 7:
-            piece = "bQ" #TODO: piece choice
-            game_info[4].append((game_info[4][-1][0], game_info[4][-1][1] + get_piece_value(piece)))
+            piece = promotion_choice(game_info)
+            if piece is None: return 'quit'
+            new_score = (game_info[4][-1][0], game_info[4][-1][1] + get_piece_value(piece))
             game_info[6].add(len(game_info[3]))
 
     elif piece[1] in ["K", "R"]:
@@ -438,6 +456,38 @@ def play_move(game_info, move):
     game_info[2] = None
     game_info[3].append(move)
     game_info[4].append(new_score)
+
+def promotion_choice(game_info):
+    color = 'w' if game_info[1] == 1 else 'b'
+    choices = { "Rook": 'R', "Knight": 'N', "Bishop": 'B', "Queen": 'Q' }
+    piece = None
+
+    if sys._getframe(2).f_code.co_name == 'get_valid_moves': return color + 'Q'
+    if game.GUI:
+        from button import Button
+        buttons = [
+            Button(2.5*SIZE, HEIGHT//2 - 2*SIZE, 'Rook'),
+            Button(2.5*SIZE, HEIGHT//2 - SIZE, 'Knight'),
+            Button(2.5*SIZE, HEIGHT//2, 'Bishop'),
+            Button(2.5*SIZE, HEIGHT//2 + SIZE, 'Queen'),
+        ]
+        while piece is None:
+            draw_timers(game_info)
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT: return
+
+            for button in buttons:
+                if button.draw_button(WIN):
+                    piece = choices[button.text]
+
+            pygame.display.update()
+    else:
+        while piece is None:
+            piece = input('Choose a piece (r, k, b, q)').upper()
+            if piece not in choices.values(): piece = None
+
+    return color + piece
 
 def get_new_score(game_info, taken_piece):
     if taken_piece[0] == "b":

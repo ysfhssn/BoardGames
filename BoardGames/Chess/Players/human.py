@@ -28,14 +28,18 @@ def get_move(game_info):
         return (i, j, di, dj)
 
     else:
-        snd_loop = False
+        first_loop = False
+        second_loop = False
         while True:
-            draw_board(game_info)
+            draw_timers(game_info)
+            pygame.display.update()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT: return None
                 x, y = pygame.mouse.get_pos()
-                if pygame.mouse.get_pressed()[0]:
-                    snd_loop = True
+                if pygame.mouse.get_pressed()[0] or first_loop:
+                    draw_board(game_info)
+                    first_loop = False
+                    second_loop = True
                     i, j = y//SIZE, x//SIZE
                     if i < 0 or i >= len(game_info[0]): continue
                     if j < 0 or j >= len(game_info[0][0]): continue
@@ -55,12 +59,10 @@ def get_move(game_info):
                         else:
                             color = (196,180,162)
                             pygame.draw.circle(WIN, color, (djj*SIZE+SIZE//2, dii*SIZE+SIZE//2), SIZE//7)
-                            pygame.display.update()
                         if (ii, jj, dii, djj) in game.get_valid_moves(game_info):
                             pygame.draw.circle(WIN, color, (djj*SIZE+SIZE//2, dii*SIZE+SIZE//2), SIZE//7)
-                            pygame.display.update()
 
-                    while snd_loop:
+                    while second_loop:
                         draw_timers(game_info)
                         pygame.display.update()
 
@@ -68,8 +70,10 @@ def get_move(game_info):
                             if event.type == pygame.QUIT: return None
                             x, y = pygame.mouse.get_pos()
                             if pygame.mouse.get_pressed()[0]:
+                                first_loop = True
+                                second_loop = False
                                 di, dj = y//SIZE, x//SIZE
                                 if (i, j, di, dj) in game.get_valid_moves(game_info):
                                     return (i, j, di, dj)
                                 else:
-                                    snd_loop = False
+                                    i, j = di, dj

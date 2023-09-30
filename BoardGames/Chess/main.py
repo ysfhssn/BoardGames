@@ -26,7 +26,7 @@ def main():
     while i < NUM_ROUNDS:
         print(f"\n\n########## DEBUT PARTIE {i+1} ##########")
         game_info = game.init()
-        #game_info = game.init_test("EN PASSANT")
+        #game_info = game.init_test("PROMOTION")
         #game.print_game(game_info)
         if game.GUI:
             pygame.display.set_mode((chess.WIDTH, chess.HEIGHT))
@@ -51,7 +51,10 @@ def main():
 
             print_move_stats(game_info, move_time)
 
-            game.play_move(game_info, move)
+            if game.play_move(game_info, move) == 'quit':
+                chess.stop_event.set()
+                return # human quit
+
             if game.GUI: chess.draw_board(game_info)
             #game.print_game(game_info)
             #game.change_player(game_info) deja effectue dans play_move

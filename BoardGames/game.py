@@ -15,7 +15,7 @@
 game	= None
 player1	= None
 player2	= None
-GUI     = True
+GUI     = True # Change this variable only here
 
 
 # Generic Functions
